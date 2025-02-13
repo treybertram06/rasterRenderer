@@ -5,6 +5,7 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
+#include <iostream>
 #include "color.h"
 
 class Image {
@@ -29,12 +30,10 @@ public:
     std::cout << image_width << " " << image_height << std::endl;
     std::cout << "255\n";
       
-    Color color;
-    for (int i = 0; i < (image_width*image_height); i++) {
-        for (int i = 0; i < image_height; i++) {
-            for (int j = 0; j < image_width; j++) {
-                std::cout << image[i][j].r << ' ' << image[i][j].g << ' ' << image[i][j].b << std::endl;
-            }
+    //Color color;
+    for (int i = 0; i < image_height; i++) {
+        for (int j = 0; j < image_width; j++) {
+            std::cout << image[i][j].r << ' ' << image[i][j].g << ' ' << image[i][j].b << std::endl;
         }
     }
   }
