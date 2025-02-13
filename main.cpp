@@ -1,7 +1,9 @@
 #include <iostream>
 #include <vector>
+#include <cmath>
 #include "include/color.h"
 #include "include/image.h"
+#include "include/vec2.h"
 using namespace std;
 
 
@@ -14,7 +16,7 @@ vector<double> interpolate(int i0, int d0, int i1, int d1) {
         return values;
     }
 
-    double a = (d1 - d0) / double(i1 - i0);
+    double a = double(d1 - d0) / double(i1 - i0);
     double d = d0;
 
     for (int i = i0; i <= i1; i++) {
@@ -25,29 +27,70 @@ vector<double> interpolate(int i0, int d0, int i1, int d1) {
 
 }
 
-void draw_line(pair<int, int> P0, pair<int, int> P1, Color c, Image& image) {
-    if ( abs(P1.first - P0.first) > abs(P1.second - P0.second)) {
+void draw_line(Vec2 P0, Vec2 P1, Color c, Image& image) {
+    if ( abs(P1.x - P0.x) > abs(P1.y - P0.y)) {
         //line is horizontalish
-        if (P0.first > P1.first) { swap(P0, P1); }
+        if (P0.x > P1.x) { swap(P0, P1); }
 
-        auto ys = interpolate(P0.first, P0.second, P1.first, P1.second);
-        for (int x = P0.first; x <= P1.first; x++) {
-            put_pixel(x, ys[x - P0.first], c, image);
+        auto ys = interpolate(P0.x, P0.y, P1.x, P1.y);
+        for (int x = P0.x; x <= P1.x; x++) {
+            put_pixel(x, ys[x - P0.x], c, image);
         }
     } else {
         //line is verticalish
-        if (P0.second > P1.second) { swap(P0, P1); }
+        if (P0.y > P1.y) { swap(P0, P1); }
 
-        auto xs = interpolate(P0.second, P0.first, P1.second, P1.first);
-        for (int y = P0.second; y <= P1.second; y++) {
-            put_pixel(y, xs[y - P0.second], c, image);
+        auto xs = interpolate(P0.y, P0.x, P1.y, P1.x);
+        for (int y = P0.y; y <= P1.y; y++) {
+            put_pixel(xs[y - P0.y], y, c, image);
         }
     }
 
 }
 
 
-void draw_wireframe_triangle();
+void draw_wireframe_triangle(Vec2 P0, Vec2 P1, Vec2 P2, Color c, Image& image) {
+    draw_line(P0, P1, c, image);
+    draw_line(P1, P2, c, image);
+    draw_line(P2, P0, c, image);
+}
+
+void draw_filled_triangle(Vec2 P0, Vec2 P1, Vec2 P2, Color c, Image& image) {
+    //sort the points so that  y0 <= y1 <= y2
+    if (P1.y < P0.y) { swap(P1, P0); }
+    if (P2.y < P0.y) { swap(P2, P0); }
+    if (P2.y < P1.y) { swap(P2, P1); }
+
+    //compute x coords of triangle edges
+    auto x01 = interpolate(P0.y, P0.x, P1.y, P1.x);
+    auto x12 = interpolate(P1.y, P1.x, P2.y, P2.x);
+    auto x02 = interpolate(P0.y, P0.x, P2.y, P2.x);
+
+    //concatenate short sides
+    x01.pop_back();
+    vector<double> x012;
+    x012.reserve(x01.size() + x12.size());
+    x012.insert(x012.end(), x01.begin(), x01.end());
+    x012.insert(x012.end(), x12.begin(), x12.end());
+
+    //determine which is left and which is right
+    auto m = floor(x012.size() / 2.0);
+    vector<double> x_left, x_right;
+    if (x02[m] < x012[m]) {
+        x_left = x02;
+        x_right = x012;
+    } else {
+        x_left = x012;
+        x_right = x02;
+    }
+
+    //draw horizonal segments
+    for (int y = P0.y; y <= P2.y; y++) {
+        for (int x = x_left[y - P0.y]; x <= x_right[y - P0.y]; x++) {
+            put_pixel(x, y, c, image);
+        }
+    }
+}
 
 
 
@@ -61,7 +104,7 @@ int main() {
     Color blue = Color(0, 0, 255);
     Color white = Color(255, 255, 255);
 
-
+    clog << "Image allocated.\n";
     Image image = Image(image_width, image_height);
 
     /*
@@ -70,8 +113,10 @@ int main() {
     draw_line({350, 350}, {750, 200}, blue, image);
     draw_line({670, 10}, {5, 900}, white, image);
     */
+    clog << "Drawing triangle to image buffer.\n";
+    draw_filled_triangle({10, 10}, {700, 50}, {350, 900}, green, image);
+    draw_wireframe_triangle({10, 10}, {700, 50}, {350, 900}, red, image);
 
-    //put_pixel(50, 50, red, image);
 
     clog << "Writing image to file...\n";
     image.output_image();

@@ -3,4 +3,5 @@ project(tinyRenderer)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(tinyRenderer main.cpp)
+add_executable(tinyRenderer main.cpp
+        include/vec2.h)

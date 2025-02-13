@@ -7,6 +7,12 @@
 
 class Vec2 {
 public:
+    Vec2(double x, double y) : x(x), y(y) {}
+    Vec2() {}
+
+    double x, y;
+};
+
 
 
 
