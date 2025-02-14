@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include "color.h"
+//Color** image;
 
 class Image {
 public:
