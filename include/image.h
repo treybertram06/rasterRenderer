@@ -33,6 +33,10 @@ public:
     //Color color;
     for (int i = 0; i < image_height; i++) {
         for (int j = 0; j < image_width; j++) {
+            if (image[i][j].r < 0 || image[i][j].g < 0 || image[i][j].g < 0) {
+                image[i][j] = {0, 0, 0};
+            }
+            image[i][j].convert_to_int();
             std::cout << image[i][j].r << ' ' << image[i][j].g << ' ' << image[i][j].b << std::endl;
         }
     }

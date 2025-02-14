@@ -6,4 +6,5 @@ set(CMAKE_CXX_STANDARD 20)
 add_executable(tinyRenderer main.cpp
         include/vec2.h
         include/vec3.h
-        include/color.h)
+        include/color.h
+        include/math_helper.h)

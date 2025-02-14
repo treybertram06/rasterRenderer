@@ -37,10 +37,15 @@ public:
     }
 
 
-
+    /*
     double r = e[0];
     double g = e[1];
     double b = e[2];
+    */
+
+    double x = e[0];
+    double y = e[1];
+    double z = e[2];
 };
 
 
