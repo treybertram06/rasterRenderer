@@ -1,9 +1,10 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
-#include "include/color.h"
 #include "include/image.h"
 #include "include/vec2.h"
+#include "include/vec3.h"
+
 using namespace std;
 
 

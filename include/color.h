@@ -1,16 +1,19 @@
 //
-// Created by treyb on 2025-02-12.
+// Created by treyb on 2025-02-13.
 //
 
 #ifndef COLOR_H
 #define COLOR_H
+#include "vec3.h"
 
-class Color {
+class Color : Vec3 {
 public:
-    Color(int r, int g, int b) : r(r), g(g), b(b) {}
-    Color() {}
+    Color(double r, double g, double b) : Vec3(r, g, b) {}
+    Color() : Vec3() {}
 
-    int r, g, b;
+    double r = e[0];
+    double g = e[1];
+    double b = e[2];
 };
 
 #endif //COLOR_H
