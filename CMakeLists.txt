@@ -8,5 +8,5 @@ add_executable(tinyRenderer main.cpp
         include/vec3.h
         include/color.h
         include/math_helper.h
-        include/draw.h
+        include/renderer.h
 )

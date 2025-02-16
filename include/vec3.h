@@ -36,6 +36,16 @@ public:
                     e[2]*(1/divisor));
     }
 
+    bool operator==(Vec3 comparator) {
+        if (e[0] == comparator.x &&
+            e[1] == comparator.y &&
+            e[2] == comparator.z) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 
     /*
     double r = e[0];

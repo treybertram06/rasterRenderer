@@ -8,7 +8,7 @@
 #include "vec3.h"
 #include "image.h"
 
-class Draw {
+class Renderer {
 public:
     void put_pixel(int x, int y, Color& c, Image& image) { image.image[x][y] = c; }
 
@@ -34,7 +34,7 @@ public:
     }
 };
 
-class Triangle : Draw {
+class Triangle : Renderer {
 public:
 
     Triangle() {}

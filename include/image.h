@@ -27,20 +27,22 @@ public:
   }
 
   void output_image() {
-    std::cout << "P3\n";
-    std::cout << image_width << " " << image_height << std::endl;
-    std::cout << "255\n";
-      
-    //Color color;
-    for (int i = 0; i < image_height; i++) {
-        for (int j = 0; j < image_width; j++) {
-            if (image[i][j].r < 0 || image[i][j].g < 0 || image[i][j].g < 0) {
-                image[i][j] = {0, 0, 0};
-            }
-            image[i][j].convert_to_int();
-            std::cout << image[i][j].r << ' ' << image[i][j].g << ' ' << image[i][j].b << std::endl;
-        }
-    }
+      std::cout << "P3\n";
+      std::cout << image_width << " " << image_height << std::endl;
+      std::cout << "255\n";
+      Color b = {0, 0, 0};
+      //Color color;
+      for (int i = 0; i < image_height; i++) {
+          for (int j = 0; j < image_width; j++) {
+              if (image[i][j].r < 0 || image[i][j].g < 0 || image[i][j].g < 0) {
+                  image[i][j] = {0, 0, 0};
+              }
+
+              if (image[i][j] == b ) { image[i][j] = background; }
+              image[i][j].convert_to_int();
+              std::cout << image[i][j].r << ' ' << image[i][j].g << ' ' << image[i][j].b << std::endl;
+          }
+      }
   }
   
   
@@ -55,6 +57,8 @@ public:
   int image_height;
   
   Color** image;
+
+    Color background = {100, 149, 237};
 
 
 };
