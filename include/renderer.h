@@ -10,7 +10,13 @@
 
 class Renderer {
 public:
-    void put_pixel(int x, int y, Color& c, Image& image) { image.image[x][y] = c; }
+    void put_pixel(int x, int y, Color& c, Image& image) {
+        if (x < 0 || image.image_width <= x || y < 0 || image.image_height <= y) {
+            return;
+        } else {
+            image.image[x][y] = c;
+        }
+    }
 
     void draw_line(Vec3 P0, Vec3 P1, Color c, Image& image) {
         if ( abs(P1.x - P0.x) > abs(P1.y - P0.y)) {
@@ -37,8 +43,10 @@ public:
 class Triangle : Renderer {
 public:
 
-    Triangle() {}
+    Triangle() = default;
+    explicit Triangle(Vec3 P) : P0(P), P1(P), P2(P) {}
     Triangle(Vec3 P0, Vec3 P1, Vec3 P2) : P0(P0), P1(P1), P2(P2) {}
+    Triangle(Vec3 P0, Vec3 P1, Vec3 P2, Color color) : P0(P0), P1(P1), P2(P2), color(color) {}
 
     void draw_wireframe_triangle(Color& c, Image& image) {
         draw_line(P0, P1, c, image);
@@ -140,7 +148,31 @@ public:
         }
     }
 
+    void render_object(std::vector<Vec3> vertices, std::vector<Triangle> triangles) {
+        std::vector<Vec3> projected;
+        for (int v = 0; v < vertices.size(); v++) {
+            projected.push_back(project_vertex(vertices[v]));
+        }
+        for (int t = 0; t < triangles.size(); t++) {
+            render_triangle(triangles[t], projected);
+        }
+    }
+
+    void render_triangle(Triangle triangle, std::vector<Vec3> projected) {
+        draw_wireframe_triangle(projected[triangle.P0],
+                                projected[triangle.P1],
+                                projected[triangle.P2],
+                                triangle.color);
+    }
+
+    Vec3 project_vertex(const Vec3& v) {
+        // Perspective projection
+        double d = 1.0; // Distance to projection plane
+        return Vec3(v.x * d / v.z, v.y * d / v.z, v.z);
+    }
+
     Vec3 P0, P1, P2;
+    Color color;
 
 
 };
