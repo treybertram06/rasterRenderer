@@ -7,6 +7,7 @@
 
 #include "vec3.h"
 #include "image.h"
+#include "model.h"
 
 class Renderer {
 public:
@@ -38,62 +39,14 @@ public:
         }
 
     }
-};
 
-class Triangle : Renderer {
-public:
-
-    Triangle() = default;
-    explicit Triangle(Vec3 P) : P0(P), P1(P), P2(P) {}
-    Triangle(Vec3 P0, Vec3 P1, Vec3 P2) : P0(P0), P1(P1), P2(P2) {}
-    Triangle(Vec3 P0, Vec3 P1, Vec3 P2, Color color) : P0(P0), P1(P1), P2(P2), color(color) {}
-
-    void draw_wireframe_triangle(Color& c, Image& image) {
+    void draw_wireframe_triangle(const Vec3& P0, const Vec3& P1, const Vec3& P2, const Color& c, Image& image) {
         draw_line(P0, P1, c, image);
         draw_line(P1, P2, c, image);
         draw_line(P2, P0, c, image);
     }
-    //redunant - does same thing as shaded triangle with h val of 1.
-    /*
-    void draw_filled_triangle(Vec2 P0, Vec2 P1, Vec2 P2, Color c, Image& image) {
-        //sort the points so that  y0 <= y1 <= y2
-        if (P1.y < P0.y) { swap(P1, P0); }
-        if (P2.y < P0.y) { swap(P2, P0); }
-        if (P2.y < P1.y) { swap(P2, P1); }
 
-        //compute x coords of triangle edges
-        auto x01 = interpolate(P0.y, P0.x, P1.y, P1.x);
-        auto x12 = interpolate(P1.y, P1.x, P2.y, P2.x);
-        auto x02 = interpolate(P0.y, P0.x, P2.y, P2.x);
-
-        //concatenate short sides
-        x01.pop_back();
-        vector<double> x012;
-        x012.reserve(x01.size() + x12.size());
-        x012.insert(x012.end(), x01.begin(), x01.end());
-        x012.insert(x012.end(), x12.begin(), x12.end());
-
-        //determine which is left and which is right
-        double m = floor(x012.size() / 2.0);
-        vector<double> x_left, x_right;
-        if (x02[m] < x012[m]) {
-            x_left = x02;
-            x_right = x012;
-        } else {
-            x_left = x012;
-            x_right = x02;
-        }
-
-        //draw horizonal segments
-        for (int y = P0.y; y <= P2.y; y++) {
-            for (int x = x_left[y - P0.y]; x <= x_right[y - P0.y]; x++) {
-                put_pixel(x, y, c, image);
-            }
-        }
-    }
-    */
-
-    void draw_shaded_triangle(Color& c, Image& image) {
+    void draw_shaded_triangle(Vec3& P0, Vec3& P1, Vec3& P2, const Color& c, Image& image) {
         //sort the points so that  y0 <= y1 <= y2
         if (P1.y < P0.y) { std::swap(P1, P0); }
         if (P2.y < P0.y) { std::swap(P2, P0); }
@@ -147,34 +100,40 @@ public:
             }
         }
     }
+};
 
-    void render_object(std::vector<Vec3> vertices, std::vector<Triangle> triangles) {
-        std::vector<Vec3> projected;
-        for (int v = 0; v < vertices.size(); v++) {
-            projected.push_back(project_vertex(vertices[v]));
-        }
-        for (int t = 0; t < triangles.size(); t++) {
-            render_triangle(triangles[t], projected);
-        }
-    }
-
-    void render_triangle(Triangle triangle, std::vector<Vec3> projected) {
-        draw_wireframe_triangle(projected[triangle.P0],
-                                projected[triangle.P1],
-                                projected[triangle.P2],
-                                triangle.color);
-    }
-
-    Vec3 project_vertex(const Vec3& v) {
-        // Perspective projection
-        double d = 1.0; // Distance to projection plane
-        return Vec3(v.x * d / v.z, v.y * d / v.z, v.z);
-    }
-
+class Triangle {
+public:
     Vec3 P0, P1, P2;
     Color color;
 
+    Triangle() = default;
+    Triangle(Vec3 P0, Vec3 P1, Vec3 P2) : P0(P0), P1(P1), P2(P2), color(Color()) {}
+    Triangle(Vec3 P0, Vec3 P1, Vec3 P2, Color color) : P0(P0), P1(P1), P2(P2), color(color) {}
 
+    void draw_wireframe(Renderer& renderer, Image& image) const {
+        renderer.draw_wireframe_triangle(P0, P1, P2, color, image);
+    }
+
+    void draw_shaded(Renderer& renderer, Image& image) {
+        renderer.draw_shaded_triangle(P0, P1, P2, color, image);
+    }
 };
+
+class Scene {
+public:
+    std::vector<Model> models;
+
+    void add_model(const Model& model) {
+        models.push_back(model);
+    }
+
+    void render(Renderer& renderer, Image& image) const {
+        for (const auto& model : models) {
+            //model.draw_wireframe(renderer, image);
+        }
+    }
+};
+
 
 #endif //DRAW_H

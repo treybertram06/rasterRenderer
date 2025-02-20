@@ -12,7 +12,7 @@ public:
     Vec3(double x, double y, double z) : e{x, y, z} {}
     Vec3() : e{0, 0, 0} {}
 
-    Vec3 operator+(Vec3& addend) const {
+    Vec3 operator+(const Vec3& addend) const {
         return Vec3(e[0] + addend.e[0],
                     e[1] + addend.e[1],
                     e[2] + addend.e[2]);

@@ -6,6 +6,12 @@
 #define MATH_HELPER_H
 
 #include <vector>
+#include "color.h"
+
+const Color RED = Color(255, 0, 0);
+const Color GREEN = Color(0, 255, 0);
+const Color BLUE = Color(0, 0, 255);
+const Color WHITE = Color(255, 255, 255);
 
 int round_to_int(double n) {
     n = n + 0.5 - (n<0);

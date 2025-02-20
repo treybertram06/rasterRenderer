@@ -9,4 +9,5 @@ add_executable(tinyRenderer main.cpp
         include/color.h
         include/math_helper.h
         include/renderer.h
+        include/model.h
 )
