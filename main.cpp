@@ -11,6 +11,11 @@
 
 using namespace std;
 
+const Color RED = Color(255, 0, 0);
+const Color GREEN = Color(0, 255, 0);
+const Color BLUE = Color(0, 0, 255);
+const Color WHITE = Color(255, 255, 255);
+
 
 int main() {
 
@@ -28,7 +33,8 @@ int main() {
     double distance_to_projection_plane = 1;
 
 
-    Triangle renderer;
+    Renderer renderer;
+    Scene scene;
 
     Vec3 translation = Vec3(-1.5, 3, 7);
 
@@ -44,7 +50,10 @@ int main() {
 
     Model cube = Model(vertices, Vec3(-1.5, 3, 7), RED);
 
-    renderer.render_object(triangles, image);
+    scene.add_model(cube);
+
+    scene.render(renderer, image);
+
 
 
     clog << "Writing image to file...\n";

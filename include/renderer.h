@@ -102,23 +102,7 @@ public:
     }
 };
 
-class Triangle {
-public:
-    Vec3 P0, P1, P2;
-    Color color;
 
-    Triangle() = default;
-    Triangle(Vec3 P0, Vec3 P1, Vec3 P2) : P0(P0), P1(P1), P2(P2), color(Color()) {}
-    Triangle(Vec3 P0, Vec3 P1, Vec3 P2, Color color) : P0(P0), P1(P1), P2(P2), color(color) {}
-
-    void draw_wireframe(Renderer& renderer, Image& image) const {
-        renderer.draw_wireframe_triangle(P0, P1, P2, color, image);
-    }
-
-    void draw_shaded(Renderer& renderer, Image& image) {
-        renderer.draw_shaded_triangle(P0, P1, P2, color, image);
-    }
-};
 
 class Scene {
 public:
@@ -128,9 +112,9 @@ public:
         models.push_back(model);
     }
 
-    void render(Renderer& renderer, Image& image) const {
-        for (const auto& model : models) {
-            //model.draw_wireframe(renderer, image);
+    void render(Renderer& renderer, Image& image) {
+        for (auto& model : models) {
+            model.draw_wireframe(renderer, image);
         }
     }
 };

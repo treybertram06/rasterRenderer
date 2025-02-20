@@ -10,4 +10,6 @@ add_executable(tinyRenderer main.cpp
         include/math_helper.h
         include/renderer.h
         include/model.h
+        include/triangle.h
+        triangle.cpp
 )

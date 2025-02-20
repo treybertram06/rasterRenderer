@@ -6,16 +6,18 @@
 #define MODEL_H
 
 #include <vector>
-#include "renderer.h"
 #include "vec3.h"
+#include "triangle.h"
 
+class Renderer;
+class Image;
 
 class Model {
 public:
     Model(const std::vector<Vec3>& vertices, Vec3 pos) : vertices(vertices), pos(pos) {
         append_triangles(vertices);
     }
-    Model(const std::vector<Vec3>& vertices, Vec3 pos, Color& color) : vertices(vertices), pos(pos), color(color) {
+    Model(const std::vector<Vec3>& vertices, Vec3 pos, Color color) : vertices(vertices), pos(pos), color(color) {
         append_triangles(vertices);
     }
 
