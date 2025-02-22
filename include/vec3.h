@@ -39,6 +39,13 @@ public:
                     e[2]*multiplier);
     }
 
+    Vec3 operator*=(double multiplier) {
+        e[0] *= multiplier;
+        e[1] *= multiplier;
+        e[2] *= multiplier;
+        return *this;
+    }
+
     Vec3 operator/(double divisor) const {
         return Vec3(e[0]*(1/divisor),
                     e[1]*(1/divisor),

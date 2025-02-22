@@ -6,8 +6,9 @@
 #define MATH_HELPER_H
 
 #include <vector>
+#include <cmath>
 
-
+inline double to_radians(double degrees) { return degrees * M_PI / 180.0; }
 
 inline int round_to_int(double n) {
     n = n + 0.5 - (n<0);

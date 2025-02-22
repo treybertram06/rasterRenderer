@@ -50,8 +50,10 @@ int main() {
 
 
 
-    Model cube = Model(vertices, Vec3(-1.5, 3, 7), RED);
+    Model cube = Model(vertices, Vec3(-1.5, 3, 7), Vec3(45, 15, 60), 1.0, RED);
     Model cube2 = Model(vertices, Vec3(1.5, -1, 7), RED);
+
+
 
     scene.add_model(cube);
     scene.add_model(cube2);
