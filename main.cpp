@@ -9,6 +9,7 @@
 #include "include/renderer.h"
 #include "include/model.h"
 
+
 using namespace std;
 
 const Color RED = Color(255, 0, 0);
@@ -36,23 +37,26 @@ int main() {
     Renderer renderer;
     Scene scene;
 
-    Vec3 translation = Vec3(-1.5, 3, 7);
 
     vector<Vec3> vertices;
-    vertices.push_back(translation + Vec3(1, 1, 1));
-    vertices.push_back(translation + Vec3(-1, 1, 1));
-    vertices.push_back(translation + Vec3(-1, -1, 1));
-    vertices.push_back(translation + Vec3(1, -1, 1));
-    vertices.push_back(translation + Vec3(1, 1, -1));
-    vertices.push_back(translation + Vec3(-1, 1, -1));
-    vertices.push_back(translation + Vec3(-1, -1, -1));
-    vertices.push_back(translation + Vec3(1, -1, -1));
+    vertices.push_back(Vec3(1, 1, 1));
+    vertices.push_back(Vec3(-1, 1, 1));
+    vertices.push_back(Vec3(-1, -1, 1));
+    vertices.push_back(Vec3(1, -1, 1));
+    vertices.push_back(Vec3(1, 1, -1));
+    vertices.push_back(Vec3(-1, 1, -1));
+    vertices.push_back(Vec3(-1, -1, -1));
+    vertices.push_back(Vec3(1, -1, -1));
+
+
 
     Model cube = Model(vertices, Vec3(-1.5, 3, 7), RED);
+    Model cube2 = Model(vertices, Vec3(1.5, -1, 7), RED);
 
     scene.add_model(cube);
+    scene.add_model(cube2);
 
-    scene.render(renderer, image);
+    scene.render(renderer, image, viewport_info);
 
 
 

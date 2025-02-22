@@ -5,6 +5,7 @@
 #ifndef VEC3_H
 #define VEC3_H
 
+#include <iostream>
 
 class Vec3 {
 public:
@@ -17,6 +18,14 @@ public:
                     e[1] + addend.e[1],
                     e[2] + addend.e[2]);
     }
+
+    Vec3 operator+=(const Vec3& addend) {
+        e[0] += addend.e[0];
+        e[1] += addend.e[1];
+        e[2] += addend.e[2];
+        return *this;
+    }
+
 
     Vec3 operator-(Vec3& subtrahend) const {
         return Vec3(e[0] - subtrahend.e[0],

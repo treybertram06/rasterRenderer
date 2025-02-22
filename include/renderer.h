@@ -8,6 +8,9 @@
 #include "vec3.h"
 #include "image.h"
 #include "model.h"
+#include <cmath>
+#include <algorithm>
+
 
 class Renderer {
 public:
@@ -73,7 +76,7 @@ public:
         h012.insert(h012.end(), h01.begin(), h01.end());
         h012.insert(h012.end(), h12.begin(), h12.end());
 
-        double m = floor(x012.size() / 2.0);
+        double m = std::floor(x012.size() / 2.0);
         std::vector<double> x_left, x_right, h_left, h_right;
         if (x02[m] < x012[m]) {
             x_left = x02;
@@ -112,9 +115,9 @@ public:
         models.push_back(model);
     }
 
-    void render(Renderer& renderer, Image& image) {
+    void render(Renderer& renderer, Image& image, double viewport_info[]) {
         for (auto& model : models) {
-            model.draw_wireframe(renderer, image);
+            model.draw_wireframe(renderer, image, viewport_info);
         }
     }
 };
