@@ -1,0 +1,19 @@
+# ninja log v6
+14	723	7617155579661627	CMakeFiles/tinyRenderer.dir/main.cpp.obj	6a151673e4f87885
+724	824	7617155586757462	tinyRenderer.exe	3941336f2e5e6be3
+41	897	7618874005010903	CMakeFiles/tinyRenderer.dir/main.cpp.obj	6a151673e4f87885
+17	767	7618874539089773	CMakeFiles/tinyRenderer.dir/main.cpp.obj	6a151673e4f87885
+9	738	7618876568358927	CMakeFiles/tinyRenderer.dir/triangle.cpp.obj	325c509eb835e3b9
+4	739	7618876568318924	CMakeFiles/tinyRenderer.dir/main.cpp.obj	6a151673e4f87885
+739	1032	7618876575660802	tinyRenderer.exe	77b4c1a573330b81
+10	704	7618897458332766	CMakeFiles/tinyRenderer.dir/triangle.cpp.obj	325c509eb835e3b9
+5	752	7618897458282763	CMakeFiles/tinyRenderer.dir/main.cpp.obj	6a151673e4f87885
+752	875	7618897465753800	tinyRenderer.exe	77b4c1a573330b81
+9	723	7618899306412685	CMakeFiles/tinyRenderer.dir/triangle.cpp.obj	325c509eb835e3b9
+5	759	7618899306372681	CMakeFiles/tinyRenderer.dir/main.cpp.obj	6a151673e4f87885
+759	877	7618899313920090	tinyRenderer.exe	77b4c1a573330b81
+34	890	7619129062553264	CMakeFiles/tinyRenderer.dir/main.cpp.obj	6a151673e4f87885
+16	787	7619129453509979	CMakeFiles/tinyRenderer.dir/main.cpp.obj	6a151673e4f87885
+16	761	7619129818588504	CMakeFiles/tinyRenderer.dir/main.cpp.obj	6a151673e4f87885
+22	777	7619129818648501	CMakeFiles/tinyRenderer.dir/triangle.cpp.obj	325c509eb835e3b9
+777	1015	7619129826200680	tinyRenderer.exe	77b4c1a573330b81
