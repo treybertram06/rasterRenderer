@@ -6,56 +6,58 @@
 #define VEC3_H
 
 #include <iostream>
+#include <cmath>
+#include "math_helper.h"
 
 class Vec3 {
 public:
-    double e[3];
-    Vec3(double x, double y, double z) : e{x, y, z} {}
-    Vec3() : e{0, 0, 0} {}
+    double x, y, z;
+    Vec3(double x, double y, double z) : x(x), y(y), z(z) {}
+    Vec3() : x(0), y(0), z(0) {}
 
     Vec3 operator+(const Vec3& addend) const {
-        return Vec3(e[0] + addend.e[0],
-                    e[1] + addend.e[1],
-                    e[2] + addend.e[2]);
+        return Vec3(x + addend.x,
+                    y + addend.y,
+                    z + addend.z);
     }
 
     Vec3 operator+=(const Vec3& addend) {
-        e[0] += addend.e[0];
-        e[1] += addend.e[1];
-        e[2] += addend.e[2];
+        x += addend.x;
+        y += addend.y;
+        z += addend.z;
         return *this;
     }
 
 
     Vec3 operator-(Vec3& subtrahend) const {
-        return Vec3(e[0] - subtrahend.e[0],
-                    e[1] - subtrahend.e[1],
-                    e[2] - subtrahend.e[2]);
+        return Vec3(x - subtrahend.x,
+                    y - subtrahend.y,
+                    z - subtrahend.z);
     }
 
     Vec3 operator*(double multiplier) const {
-        return Vec3(e[0]*multiplier,
-                    e[1]*multiplier,
-                    e[2]*multiplier);
+        return Vec3(x*multiplier,
+                    y*multiplier,
+                    z*multiplier);
     }
 
     Vec3 operator*=(double multiplier) {
-        e[0] *= multiplier;
-        e[1] *= multiplier;
-        e[2] *= multiplier;
+        x *= multiplier;
+        y *= multiplier;
+        z *= multiplier;
         return *this;
     }
 
     Vec3 operator/(double divisor) const {
-        return Vec3(e[0]*(1/divisor),
-                    e[1]*(1/divisor),
-                    e[2]*(1/divisor));
+        return Vec3(x*(1/divisor),
+                    y*(1/divisor),
+                    z*(1/divisor));
     }
 
     bool operator==(Vec3 comparator) {
-        if (e[0] == comparator.x &&
-            e[1] == comparator.y &&
-            e[2] == comparator.z) {
+        if (x == comparator.x &&
+            y == comparator.y &&
+            z == comparator.z) {
             return true;
         } else {
             return false;
@@ -63,15 +65,6 @@ public:
     }
 
 
-    /*
-    double r = e[0];
-    double g = e[1];
-    double b = e[2];
-    */
-
-    double x = e[0];
-    double y = e[1];
-    double z = e[2];
 };
 
 

@@ -72,20 +72,21 @@ private:
         }
     }
 
-    void rotate_vertices() {
-        //std::clog << "Rotating vertices..." << std::endl;
-        for (auto& v : vertices) {
-            //std::clog << "Before: (" << v.x << ", " << v.y << ", " << v.z << ")" << std::endl;
-            rotate_x(v, rotation.x);
-            rotate_y(v, rotation.y);
-            rotate_z(v, rotation.z);
-            //std::clog << "After: (" << v.x << ", " << v.y << ", " << v.z << ")" << std::endl;
-        }
-    }
-
     void scale_vertices() {
         for (auto& v : vertices) {
             v = v * scale;
+        }
+    }
+
+    //reminder to future me, if you want to represent the same thing with two different names, just make one reference the other...
+    void rotate_vertices() {
+        //std::clog << "Rotating vertices..." << std::endl;
+        for (int i = 0; i < vertices.size(); i++) {
+            //std::clog << "Before: (" << vertices[i].x << ", " << vertices[i].y << ", " << vertices[i].z << ")" << std::endl;
+            rotate_x(vertices[i], rotation.x);
+            rotate_y(vertices[i], rotation.y);
+            rotate_z(vertices[i], rotation.z);
+            //std::clog << "After: (" << vertices[i].x << ", " << vertices[i].y << ", " << vertices[i].z << ")" << std::endl;
         }
     }
 

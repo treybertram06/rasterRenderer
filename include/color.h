@@ -10,7 +10,7 @@
 class Color : public Vec3 {
 public:
     Color(double r, double g, double b) : Vec3(r, g, b) {}
-    explicit Color(const Vec3& v) : Vec3(v.e[0], v.e[1], v.e[2]) {}
+    explicit Color(const Vec3& v) : Vec3(v.x, v.y, v.z) {}
     Color() : Vec3() {}
 
     void convert_to_int() {
@@ -20,9 +20,9 @@ public:
     }
 
 
-    double r = e[0];
-    double g = e[1];
-    double b = e[2];
+    double r = x;
+    double g = y;
+    double b = z;
 };
 
 #endif //COLOR_H
