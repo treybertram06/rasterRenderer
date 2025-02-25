@@ -8,13 +8,18 @@
 #include "vec3.h"
 #include "image.h"
 #include "model.h"
+#include "camera.h"
 #include <cmath>
 #include <algorithm>
 
 
 class Renderer {
 public:
-    void put_pixel(int x, int y, Color& c, Image& image) {
+
+    Renderer(Camera& camera) : camera(camera) {}
+    Camera camera;
+
+    static void put_pixel(int x, int y, const Color& c, const Image& image) {
         if (x < 0 || image.image_width <= x || y < 0 || image.image_height <= y) {
             return;
         } else {
@@ -22,7 +27,7 @@ public:
         }
     }
 
-    void draw_line(Vec3 P0, Vec3 P1, Color c, Image& image) {
+    static void draw_line(Vec3 P0, Vec3 P1, Color c, const Image& image) {
         if ( abs(P1.x - P0.x) > abs(P1.y - P0.y)) {
             //line is horizontalish
             if (P0.x > P1.x) { std::swap(P0, P1); }
@@ -43,13 +48,18 @@ public:
 
     }
 
-    void draw_wireframe_triangle(const Vec3& P0, const Vec3& P1, const Vec3& P2, const Color& c, Image& image) {
-        draw_line(P0, P1, c, image);
-        draw_line(P1, P2, c, image);
-        draw_line(P2, P0, c, image);
+    void draw_wireframe_triangle(Vec3& P0, Vec3& P1, Vec3& P2, const Color& c, const Image& image, double viewport_info[]) {
+        move_vertices(P0, P1, P2);
+        project_vertices(P0, P1, P2, viewport_info);
+
+        draw_line(projected_P0, projected_P1, c, image);
+        draw_line(projected_P1, projected_P2, c, image);
+        draw_line(projected_P2, projected_P0, c, image);
     }
 
-    void draw_shaded_triangle(Vec3& P0, Vec3& P1, Vec3& P2, const Color& c, Image& image) {
+
+
+    static void draw_shaded_triangle(Vec3& P0, Vec3& P1, Vec3& P2, const Color& c, const Image& image) {
         //sort the points so that  y0 <= y1 <= y2
         if (P1.y < P0.y) { std::swap(P1, P0); }
         if (P2.y < P0.y) { std::swap(P2, P0); }
@@ -103,6 +113,65 @@ public:
             }
         }
     }
+
+private:
+    void move_vertices(Vec3& P0, Vec3& P1, Vec3& P2) {
+        move_from_camera(P0);
+        move_from_camera(P1);
+        move_from_camera(P2);
+    }
+    void move_from_camera(Vec3& vertex) {
+        rotate_x(vertex, camera.rotation.x);
+        rotate_y(vertex, camera.rotation.y);
+        rotate_z(vertex, camera.rotation.z);
+        vertex = vertex + camera.pos;
+    }
+
+    Vec3 project_to_screen(const Vec3& vertex, double viewport_info[]) {
+
+        double d = 1;
+        double x = vertex.x / vertex.z * d;
+        double y = vertex.y / vertex.z * d;
+
+        double screen_x = (x + viewport_info[2] / 2) * viewport_info[0] / viewport_info[2];
+        double screen_y = (1 - (y + viewport_info[3] / 2) / viewport_info[3]) * viewport_info[1];
+
+        return Vec3(screen_x, screen_y, vertex.z);
+    }
+
+    Vec3 projected_P0, projected_P1, projected_P2;
+    void project_vertices(const Vec3& P0, const Vec3& P1, const Vec3& P2, double viewport_info[]) {
+        projected_P0 = project_to_screen(P0, viewport_info);
+        projected_P1 = project_to_screen(P1, viewport_info);
+        projected_P2 = project_to_screen(P2, viewport_info);
+    }
+
+    void rotate_x(Vec3& v, double angle) {
+        double rad = to_radians(angle);
+        double y = v.y * cos(rad) - v.z * sin(rad);
+        double z = v.y * sin(rad) + v.z * cos(rad);
+        v.y = y;
+        v.z = z;
+    }
+
+    void rotate_y(Vec3& v, double angle) {
+        double rad = to_radians(angle);
+        double x = v.x * cos(rad) + v.z * sin(rad);
+        double z = -v.x * sin(rad) + v.z * cos(rad);
+        v.x = x;
+        v.z = z;
+    }
+
+    void rotate_z(Vec3& v, double angle) {
+        double rad = to_radians(angle);
+        double x = v.x * cos(rad) - v.y * sin(rad);
+        double y = v.x * sin(rad) + v.y * cos(rad);
+        v.x = x;
+        v.y = y;
+    }
+
+
+
 };
 
 

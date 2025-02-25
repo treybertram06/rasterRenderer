@@ -38,8 +38,7 @@ public:
 
     void draw_wireframe(Renderer& renderer, Image& image, double viewport_info[]) {
         for (auto& triangle : triangles) {
-            triangle.project_vertices(viewport_info);
-            triangle.draw_wireframe(renderer, image);
+            triangle.draw_wireframe(renderer, image, viewport_info);
         }
     }
 

@@ -12,4 +12,5 @@ add_executable(tinyRenderer main.cpp
         include/model.h
         include/triangle.h
         triangle.cpp
+        include/camera.h
 )

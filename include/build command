@@ -1,0 +1,1 @@
+g++ main.cpp triangle.cpp -o main.exe -L. -lglfw3 -lgdi32 -lopengl32

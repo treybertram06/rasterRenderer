@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <cmath>
+#include "vec3.h"
 
 inline double to_radians(double degrees) { return degrees * M_PI / 180.0; }
 

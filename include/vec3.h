@@ -41,6 +41,12 @@ public:
                     z*multiplier);
     }
 
+    Vec3 operator*(Vec3 multiplier) const {
+        return Vec3(x*multiplier.x,
+                    y*multiplier.y,
+                    z*multiplier.z);
+    }
+
     Vec3 operator*=(double multiplier) {
         x *= multiplier;
         y *= multiplier;
@@ -62,6 +68,16 @@ public:
         } else {
             return false;
         }
+    }
+
+    bool operator<(const Vec3& other) const {
+        return std::tie(x, y, z) < std::tie(other.x, other.y, other.z);
+    }
+
+    void translate(const Vec3& tranlation) {
+        x += tranlation.x;
+        y += tranlation.y;
+        z += tranlation.z;
     }
 
 
