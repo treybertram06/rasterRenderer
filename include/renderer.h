@@ -22,9 +22,8 @@ public:
     static void put_pixel(int x, int y, const Color& c, const Image& image) {
         if (x < 0 || image.image_width <= x || y < 0 || image.image_height <= y) {
             return;
-        } else {
-            image.image[x][y] = c;
         }
+        image.image[x][y] = c;
     }
 
     static void draw_line(Vec3 P0, Vec3 P1, Color c, const Image& image) {
