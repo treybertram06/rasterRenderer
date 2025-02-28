@@ -5,7 +5,7 @@
 #include <cmath>
 #include <algorithm>
 #include <cfloat>
-#include "GLFW/glfw3.h"
+#include "include/GLFW/glfw3.h"
 
 #include "include/image.h"
 #include "include/vec2.h"

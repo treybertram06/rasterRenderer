@@ -7,25 +7,33 @@
 
 #include <iostream>
 #include "color.h"
+#include "include/GLFW/glfw3.h"
 //Color** image;
 
 class Image {
 public:
   
-  Image(int image_width, int image_height) : image_width(image_width), image_height(image_height) {
-    image = new Color*[image_height];
-    for (int i = 0; i < image_height; i++) {
-        image[i] = new Color[image_width];
+    Image(int image_width, int image_height) : image_width(image_width), image_height(image_height) {
+      image = new Color*[image_height];
+      for (int i = 0; i < image_height; i++) {
+          image[i] = new Color[image_width];
+      }
+
+      Color c = Color(0, 0, 0);
+      for (int i = 0; i < image_height; i++) {
+          for (int j = 0; j < image_width; j++) {
+              image[i][j] = c;
+          }
+      }
     }
 
-    Color c = Color(0, 0, 0);
-    for (int i = 0; i < image_height; i++) {
-        for (int j = 0; j < image_width; j++) {
-            image[i][j] = c;
-        }
-    }
-  }
+    void output_image() {
 
+    }
+
+
+
+/*
   void output_image() {
       std::cout << "P3\n";
       std::cout << image_width << " " << image_height << std::endl;
@@ -44,6 +52,9 @@ public:
           }
       }
   }
+  */
+
+
   
   
   void cleanup() {
