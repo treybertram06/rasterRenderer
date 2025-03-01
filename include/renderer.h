@@ -17,6 +17,7 @@ class Renderer {
 public:
 
     Renderer(Camera& camera) : camera(camera) {}
+    void set_camera(Camera& new_camera) { camera = new_camera; }
     Camera camera;
 
     static void put_pixel(int x, int y, const Color& c, const Image& image) {
@@ -48,13 +49,46 @@ public:
     }
 
     void draw_wireframe_triangle(Vec3& P0, Vec3& P1, Vec3& P2, const Color& c, const Image& image, double viewport_info[]) {
-        move_vertices(P0, P1, P2);
-        project_vertices(P0, P1, P2, viewport_info);
+        move_vertices_from_camera(P0, P1, P2);
+        std::vector<Vec3> triangle_moved = {moved_P0, moved_P1, moved_P2};
 
-        draw_line(projected_P0, projected_P1, c, image);
-        draw_line(projected_P1, projected_P2, c, image);
-        draw_line(projected_P2, projected_P0, c, image);
+        project_vertices(moved_P0, moved_P1, moved_P2, viewport_info);
+        std::vector<Vec3> triangle_projected = {projected_P0, projected_P1, projected_P2};
+
+        if (is_in_view(triangle_projected, viewport_info) && is_in_front(triangle_moved)) {
+
+            draw_line(projected_P0, projected_P1, c, image);
+            draw_line(projected_P1, projected_P2, c, image);
+            draw_line(projected_P2, projected_P0, c, image);
+        }
     }
+
+    bool is_in_view(const std::vector<Vec3>& triangle, double viewport_info[]) {
+        int count = 0;
+        for (int i = 0; i < 3; i++) {
+            if ( triangle[i].x < 0 || triangle[i].x > viewport_info[0]) {
+                //std::clog << "vertex is off screen.\n";
+                count++;
+            }
+            if ( triangle[i].y < 0 || triangle[i].y > viewport_info[1]) {
+                //std::clog << "vertex is off screen.\n";
+                count++;
+            }
+        }
+
+        return !(count == 3);
+    }
+
+    bool is_in_front(const std::vector<Vec3>& triangle) {
+        for (int i = 0; i < 3; i++) {
+            if ( triangle[i].z < 1) {
+                //std::clog << "behind camera\n";
+                return false;
+            }
+        }
+        return true;
+    }
+
 
 
 
@@ -114,26 +148,36 @@ public:
     }
 
 private:
-    void move_vertices(Vec3& P0, Vec3& P1, Vec3& P2) {
-        move_from_camera(P0);
-        move_from_camera(P1);
-        move_from_camera(P2);
+    Vec3 moved_P0, moved_P1, moved_P2;
+    void move_vertices_from_camera(Vec3& P0, Vec3& P1, Vec3& P2) {
+        moved_P0 = move_from_camera(P0);
+        moved_P1 = move_from_camera(P1);
+        moved_P2 = move_from_camera(P2);
     }
-    void move_from_camera(Vec3& vertex) {
-        rotate_x(vertex, camera.rotation.x);
-        rotate_y(vertex, camera.rotation.y);
-        rotate_z(vertex, camera.rotation.z);
-        vertex = vertex + camera.pos;
+    Vec3 move_from_camera(Vec3& vertex) {
+        Vec3 moved_vertex = vertex - camera.pos;
+
+        rotate_x(moved_vertex, camera.rotation.x);
+        rotate_y(moved_vertex, camera.rotation.y);
+        rotate_z(moved_vertex, camera.rotation.z);
+
+        return moved_vertex;
     }
 
+
     Vec3 project_to_screen(const Vec3& vertex, double viewport_info[]) {
+
+        double image_width = viewport_info[0];
+        double image_height = viewport_info[1];
+        double viewport_width = viewport_info[2];
+        double viewport_height = viewport_info[3];
 
         double d = 1;
         double x = vertex.x / vertex.z * d;
         double y = vertex.y / vertex.z * d;
 
-        double screen_x = (x + viewport_info[2] / 2) * viewport_info[0] / viewport_info[2];
-        double screen_y = (1 - (y + viewport_info[3] / 2) / viewport_info[3]) * viewport_info[1];
+        double screen_x = (x + viewport_width / 2) * image_width / viewport_width;
+        double screen_y = (1 - (y + viewport_height / 2) / viewport_height) * image_height;
 
         return Vec3(screen_x, screen_y, vertex.z);
     }
@@ -168,6 +212,8 @@ private:
         v.x = x;
         v.y = y;
     }
+
+    //double signed_distance(Plane plane, Vec3 vertex)
 
 
 

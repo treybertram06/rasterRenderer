@@ -23,7 +23,7 @@ public:
         glGenTextures(1, &textureID);
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);  // Set the clear color to black
 
-        std::cout << "Image object created with width: " << image_width << " and height: " << image_height << std::endl;
+        //std::cout << "Image object created with width: " << image_width << " and height: " << image_height << std::endl;
     }
 
     ~Image() {
@@ -35,30 +35,7 @@ public:
         convert_image_to_byte_array();
         update_texture();
         render_quad();
-        //get rid of this when you figure out how to render properly
-        _sleep(500);
     }
-
-/*
- void output_image() {
-      std::cout << "P3\n";
-      std::cout << image_width << " " << image_height << std::endl;
-      std::cout << "255\n";
-      Color b = {0, 0, 0};
-      //Color color;
-      for (int i = 0; i < image_height; i++) {
-          for (int j = 0; j < image_width; j++) {
-              if (image[i][j].r < 0 || image[i][j].g < 0 || image[i][j].g < 0) {
-                  image[i][j] = {0, 0, 0};
-              }
-
-              if (image[i][j] == b ) { image[i][j] = background; }
-              image[i][j].convert_to_int();
-              std::cout << image[i][j].r << ' ' << image[i][j].g << ' ' << image[i][j].b << std::endl;
-          }
-      }
-  }
-  */
 
     void cleanup() {
         for (int i = 0; i < image_height; i++) {
@@ -83,15 +60,21 @@ private:
     void convert_image_to_byte_array() {
         for (int i = 0; i < image_width; ++i) {
             for (int j = 0; j < image_height; ++j) {
-                if (image[i][j] == blank) { image[i][j] = background; }
-                byte_array[(j * image_height + i) * 3 + 0] = static_cast<unsigned char>(image[i][j].x);
-                byte_array[(j * image_height + i) * 3 + 1] = static_cast<unsigned char>(image[i][j].y);
-                byte_array[(j * image_height + i) * 3 + 2] = static_cast<unsigned char>(image[i][j].z);
-                //std::clog << image[i][j].r << " " << image[i][j].g << " " << image[i][j].b << std::endl;
+                if (image[i][j] == blank) {
+                    image[i][j] = background;
+                }
 
+                // Calculate the new position for a 90-degree clockwise rotation
+                int new_i = image_height - 1 - j;
+                int new_j = i;
+
+                // Store the pixel data in the rotated position
+                byte_array[(new_j * image_width + new_i) * 3 + 0] = static_cast<unsigned char>(image[i][j].x);
+                byte_array[(new_j * image_width + new_i) * 3 + 1] = static_cast<unsigned char>(image[i][j].y);
+                byte_array[(new_j * image_width + new_i) * 3 + 2] = static_cast<unsigned char>(image[i][j].z);
             }
         }
-        //std::cout << "Image converted to byte array." << std::endl;
+        // std::cout << "Image rotated by 90 degrees and converted to byte array." << std::endl;
     }
 
     void update_texture() {
@@ -103,7 +86,7 @@ private:
     }
 
     void render_quad() {
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, textureID);
@@ -118,7 +101,6 @@ private:
         glDisable(GL_TEXTURE_2D);
 
         glfwSwapBuffers(glfwGetCurrentContext());
-        //std::cout << "Rendered quad with texture." << std::endl;
     }
 };
 

@@ -35,6 +35,13 @@ public:
                     z - subtrahend.z);
     }
 
+    Vec3 operator-=(const Vec3& subtrahend) {
+        x -= subtrahend.x;
+        y -= subtrahend.y;
+        z -= subtrahend.z;
+        return *this;
+    }
+
     Vec3 operator*(double multiplier) const {
         return Vec3(x*multiplier,
                     y*multiplier,
@@ -78,6 +85,34 @@ public:
         x += tranlation.x;
         y += tranlation.y;
         z += tranlation.z;
+    }
+
+    Vec3 normalize() const {
+        double mag = magnitude();
+        if (mag > 0) {
+            return Vec3(x / mag, y / mag, z / mag);
+        }
+        return Vec3(0.0, 0.0, 0.0); // Return zero vector if magnitude is zero
+    }
+
+
+    double magnitude() const {
+        return sqrt(x * x + y * y + z * z);
+    }
+
+    Vec3 cross(const Vec3& other) const {
+        return Vec3(
+            y * other.z - z * other.y,
+            z * other.x - x * other.z,
+            x * other.y - y * other.x
+        );
+    }
+
+     inline double dot(const Vec3& other) const {
+        return (
+            x * other.x +
+            y * other.y +
+            z * other.z);
     }
 
 

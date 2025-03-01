@@ -66,7 +66,7 @@ private:
 
     void translate_vertices() {
         for (int i = 0; i < vertices.size(); i++) {
-            vertices[i] = pos + vertices[i];
+            vertices[i] = pos - vertices[i];
             //std::clog << "Translated: " << vertices[i].x << " " << vertices[i].y << " " << vertices[i].z << std::endl;
         }
     }
