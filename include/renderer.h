@@ -63,34 +63,112 @@ public:
         }
     }
 
-    bool is_in_view(const std::vector<Vec3>& triangle, double viewport_info[]) {
-        int count = 0;
-        for (int i = 0; i < 3; i++) {
-            if ( triangle[i].x < 0 || triangle[i].x > viewport_info[0]) {
-                //std::clog << "vertex is off screen.\n";
-                count++;
-            }
-            if ( triangle[i].y < 0 || triangle[i].y > viewport_info[1]) {
-                //std::clog << "vertex is off screen.\n";
-                count++;
-            }
+    void draw_filled_triangle(Vec3& P0, Vec3& P1, Vec3& P2, const Color& c, Image& image, double viewport_info[]) {
+    move_vertices_from_camera(P0, P1, P2);
+    std::vector<Vec3> triangle_moved = {moved_P0, moved_P1, moved_P2};
+
+    project_vertices(moved_P0, moved_P1, moved_P2, viewport_info);
+    std::vector<Vec3> triangle_projected = {projected_P0, projected_P1, projected_P2};
+
+    if (is_in_view(triangle_projected, viewport_info) && is_in_front(triangle_moved)) {
+
+        if (projected_P1.y < projected_P0.y) std::swap(projected_P1, projected_P0);
+        if (projected_P2.y < projected_P0.y) std::swap(projected_P2, projected_P0);
+        if (projected_P2.y < projected_P1.y) std::swap(projected_P2, projected_P1);
+
+        std::vector<double> x01 = interpolate(projected_P0.y, projected_P0.x, projected_P1.y, projected_P1.x);
+        std::vector<double> x12 = interpolate(projected_P1.y, projected_P1.x, projected_P2.y, projected_P2.x);
+        std::vector<double> x02 = interpolate(projected_P0.y, projected_P0.x, projected_P2.y, projected_P2.x);
+
+        std::vector<double> x012 = x01;
+        x012.pop_back();
+        x012.insert(x012.end(), x12.begin(), x12.end());
+
+        size_t m = x012.size() / 2;
+        std::vector<double> x_left, x_right;
+
+        if (x02[m] < x012[m]) {
+            x_left = x02;
+            x_right = x012;
+        } else {
+            x_left = x012;
+            x_right = x02;
         }
 
-        return !(count == 3);
-    }
+        for (int y = static_cast<int>(projected_P0.y); y <= static_cast<int>(projected_P2.y); y++) {
+            int left_x = static_cast<int>(x_left[y - static_cast<int>(projected_P0.y)]);
+            int right_x = static_cast<int>(x_right[y - static_cast<int>(projected_P0.y)]);
 
-    bool is_in_front(const std::vector<Vec3>& triangle) {
-        for (int i = 0; i < 3; i++) {
-            if ( triangle[i].z < 1) {
-                //std::clog << "behind camera\n";
-                return false;
+            for (int x = left_x; x <= right_x; x++) {
+                put_pixel(x, y, c, image);
             }
         }
-        return true;
     }
+}
 
+    void draw_filled_triangle_with_depth(Vec3& P0, Vec3& P1, Vec3& P2, const Color& c, Image& image, double viewport_info[], std::vector<std::vector<double>>& depth_buffer) {
+    move_vertices_from_camera(P0, P1, P2);
+    std::vector<Vec3> triangle_moved = {moved_P0, moved_P1, moved_P2};
 
+    project_vertices(moved_P0, moved_P1, moved_P2, viewport_info);
+    std::vector<Vec3> triangle_projected = {projected_P0, projected_P1, projected_P2};
 
+    if (is_in_view(triangle_projected, viewport_info) && is_in_front(triangle_moved)) {
+
+        if (projected_P1.y < projected_P0.y) std::swap(projected_P1, projected_P0);
+        if (projected_P2.y < projected_P0.y) std::swap(projected_P2, projected_P0);
+        if (projected_P2.y < projected_P1.y) std::swap(projected_P2, projected_P1);
+
+        std::vector<double> x01 = interpolate(projected_P0.y, projected_P0.x, projected_P1.y, projected_P1.x);
+        std::vector<double> x12 = interpolate(projected_P1.y, projected_P1.x, projected_P2.y, projected_P2.x);
+        std::vector<double> x02 = interpolate(projected_P0.y, projected_P0.x, projected_P2.y, projected_P2.x);
+
+        std::vector<double> z01 = interpolate(projected_P0.y, projected_P0.z, projected_P1.y, projected_P1.z);
+        std::vector<double> z12 = interpolate(projected_P1.y, projected_P1.z, projected_P2.y, projected_P2.z);
+        std::vector<double> z02 = interpolate(projected_P0.y, projected_P0.z, projected_P2.y, projected_P2.z);
+
+        std::vector<double> x012 = x01;
+        x012.pop_back();
+        x012.insert(x012.end(), x12.begin(), x12.end());
+
+        std::vector<double> z012 = z01;
+        z012.pop_back();
+        z012.insert(z012.end(), z12.begin(), z12.end());
+
+        size_t m = x012.size() / 2;
+        std::vector<double> x_left, x_right, z_left, z_right;
+
+        if (x02[m] < x012[m]) {
+            x_left = x02;
+            x_right = x012;
+            z_left = z02;
+            z_right = z012;
+        } else {
+            x_left = x012;
+            x_right = x02;
+            z_left = z012;
+            z_right = z02;
+        }
+
+        for (int y = static_cast<int>(projected_P0.y); y <= static_cast<int>(projected_P2.y); y++) {
+            int left_x = static_cast<int>(x_left[y - static_cast<int>(projected_P0.y)]);
+            int right_x = static_cast<int>(x_right[y - static_cast<int>(projected_P0.y)]);
+
+            double z_left_value = z_left[y - static_cast<int>(projected_P0.y)];
+            double z_right_value = z_right[y - static_cast<int>(projected_P0.y)];
+
+            double z_segment = interpolate_z(left_x, z_left_value, right_x, z_right_value);
+
+            for (int x = left_x; x <= right_x; x++) {
+                if (z_segment < depth_buffer[x][y]) {
+                    put_pixel(x, y, c, image);
+                    depth_buffer[x][y] = z_segment;
+                }
+                z_segment += (z_right_value - z_left_value) / (right_x - left_x);
+            }
+        }
+    }
+}
 
     static void draw_shaded_triangle(Vec3& P0, Vec3& P1, Vec3& P2, const Color& c, const Image& image) {
         //sort the points so that  y0 <= y1 <= y2
@@ -213,7 +291,31 @@ private:
         v.y = y;
     }
 
-    //double signed_distance(Plane plane, Vec3 vertex)
+    bool is_in_view(const std::vector<Vec3>& triangle, double viewport_info[]) {
+        int count = 0;
+        for (int i = 0; i < 3; i++) {
+            if ( triangle[i].x < 0 || triangle[i].x > viewport_info[0]) {
+                //std::clog << "vertex is off screen.\n";
+                count++;
+            }
+            if ( triangle[i].y < 0 || triangle[i].y > viewport_info[1]) {
+                //std::clog << "vertex is off screen.\n";
+                count++;
+            }
+        }
+
+        return !(count == 3);
+    }
+
+    bool is_in_front(const std::vector<Vec3>& triangle) {
+        for (int i = 0; i < 3; i++) {
+            if ( triangle[i].z < 1) {
+                //std::clog << "behind camera\n";
+                return false;
+            }
+        }
+        return true;
+    }
 
 
 
@@ -229,9 +331,9 @@ public:
         models.push_back(model);
     }
 
-    void render(Renderer& renderer, Image& image, double viewport_info[]) {
+    void render(Renderer& renderer, Image& image, double viewport_info[], std::vector<std::vector<double>>& depth_buffer) {
         for (auto& model : models) {
-            model.draw_wireframe(renderer, image, viewport_info);
+            model.draw_filled(renderer, image, viewport_info, depth_buffer);
         }
     }
 };

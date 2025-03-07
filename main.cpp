@@ -37,33 +37,79 @@ void error_callback(int error, const char* description) {
     cerr << "Error: " << description << endl;
 }
 
+float get_delta_time() {
+    static double last_time = glfwGetTime();
+    double current_time = glfwGetTime();
+    float delta_time = float(current_time - last_time);
+    last_time = current_time;
+    return delta_time;
+}
 
 
+
+bool keys[1024];
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (key >= 0 && key < 1024) {
+        if (action == GLFW_PRESS) keys[key] = true;
+        else if (action == GLFW_RELEASE) keys[key] = false;
+    }
 
-    if (key == GLFW_KEY_Q && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        game_state.camera.pos.x -= 0.1f;
-    }
-    if (key == GLFW_KEY_E && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        game_state.camera.pos.x += 0.1f;
-    }
-    if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        game_state.camera.pos.y += 0.1f;
-    }
-    if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        game_state.camera.pos.y -= 0.1f;
-    }
-    if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        game_state.camera.pos.z += 0.1f;
-    }
-    if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        game_state.camera.pos.z -= 0.1f;
-    }
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);
     }
 }
+
+void process_movement() {
+    static float velocity = 0.0f;
+    float max_speed = 5.0f;
+    float accel = 10.0f;
+    float decel = 10.0f;
+    float delta_time = get_delta_time();
+
+    if (keys[GLFW_KEY_W] || keys[GLFW_KEY_A] || keys[GLFW_KEY_S] || keys[GLFW_KEY_D]) {
+        velocity += accel * delta_time;
+        if (velocity > max_speed) velocity = max_speed;
+    } else {
+        velocity -= decel * delta_time;
+        if (velocity < 0) velocity = 0;
+    }
+
+    float radians = to_radians(game_state.camera.rotation.x);
+
+    if (keys[GLFW_KEY_D]) {
+        float delta_z = cos(radians);
+        float delta_y = -sin(radians);
+        game_state.camera.pos.z += delta_y * velocity * delta_time;
+        game_state.camera.pos.y += delta_z * velocity * delta_time;
+    }
+    if (keys[GLFW_KEY_A]) {
+        float delta_z = -cos(radians);
+        float delta_y = sin(radians);
+        game_state.camera.pos.z += delta_y * velocity * delta_time;
+        game_state.camera.pos.y += delta_z * velocity * delta_time;
+    }
+    if (keys[GLFW_KEY_W]) {
+        float delta_z = cos(radians);
+        float delta_y = sin(radians);
+        game_state.camera.pos.z += delta_z * velocity * delta_time;
+        game_state.camera.pos.y += delta_y * velocity * delta_time;
+    }
+    if (keys[GLFW_KEY_S]) {
+        float delta_z = cos(radians);
+        float delta_y = sin(radians);
+        game_state.camera.pos.z -= delta_z * velocity * delta_time;
+        game_state.camera.pos.y -= delta_y * velocity * delta_time;
+    }
+    if (keys[GLFW_KEY_Q]) {
+        game_state.camera.pos.x -= 0.1f * delta_time;
+    }
+    if (keys[GLFW_KEY_E]) {
+        game_state.camera.pos.x += 0.1f * delta_time;
+    }
+}
+
+
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     static const double sensitivity = 0.1;
@@ -96,7 +142,17 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     game_state.camera.rotation.z = 0;
 }
 
+void initialize_depth_buffer(int image_width, int image_height, std::vector<std::vector<double>>& depth_buffer) {
+    // Resize the depth buffer to match the image dimensions
+    depth_buffer.resize(image_width, std::vector<double>(image_height));
 
+    // Initialize all values to infinity
+    for (int i = 0; i < image_width; i++) {
+        for (int j = 0; j < image_height; j++) {
+            depth_buffer[i][j] = std::numeric_limits<double>::infinity();
+        }
+    }
+}
 
 int main() {
 
@@ -153,7 +209,6 @@ int main() {
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); //Enable VSync
 
-
     glfwSetWindowUserPointer(window, &game_state);
     glfwSetKeyCallback(window, key_callback);
 
@@ -163,6 +218,9 @@ int main() {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPosCallback(window, mouse_callback);
 
+    std::vector<std::vector<double>> depth_buffer;
+    initialize_depth_buffer(image_width, image_height, depth_buffer);
+
 
 
     while (!glfwWindowShouldClose(window)) {
@@ -170,14 +228,18 @@ int main() {
 
         Image image = Image(image_width, image_height);
 
+
         renderer.set_camera(game_state.camera);
-        scene.render(renderer, image, viewport_info);
+        scene.render(renderer, image, viewport_info, depth_buffer);
         image.output_image();
+
+
         //clog << game_state.camera.rotation.x << " " << game_state.camera.rotation.y << " " << game_state.camera.rotation.z << endl;
 
 
 
         glfwPollEvents();
+        process_movement();
 
         auto frame_end_time = chrono::high_resolution_clock::now();
         auto frame_duration = duration_cast<chrono::milliseconds>(frame_end_time - frame_start_time);

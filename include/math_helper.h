@@ -34,4 +34,11 @@ inline std::vector<double> interpolate(double i0, double d0, double i1, double d
 
 }
 
+inline double interpolate_z(int x0, double z0, int x1, double z1) {
+    if (x0 == x1) return z0;
+    return z0 + (z1 - z0) * (x1 - x0);
+}
+
+
+
 #endif //MATH_HELPER_H

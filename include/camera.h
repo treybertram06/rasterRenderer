@@ -46,6 +46,7 @@ private:
         double pitch = rotation.x; // Pitch (around X-axis)
         double roll = rotation.z;  // Roll (around Z-axis)
 
+
         // Yaw (Y-axis rotation)
         double cosy = cos(yaw), siny = sin(yaw);
         Vec3 rotated_yaw(

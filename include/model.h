@@ -42,6 +42,12 @@ public:
         }
     }
 
+    void draw_filled(Renderer& renderer, Image& image, double viewport_info[], std::vector<std::vector<double>>& depth_buffer) {
+        for (auto& triangle : triangles) {
+            triangle.draw_filled(renderer, image, viewport_info, depth_buffer);
+        }
+    }
+
     Color color;
     Vec3 pos;
     Vec3 rotation;
@@ -49,19 +55,25 @@ public:
 
 
 private:
+
+    // CURRENTLY USING RANDOM COLORS
     void append_triangles() {
-        triangles.push_back({vertices[0], vertices[1], vertices[2], color});
-        triangles.push_back({vertices[0], vertices[2], vertices[3], color});
-        triangles.push_back({vertices[4], vertices[0], vertices[3], color});
-        triangles.push_back({vertices[4], vertices[3], vertices[7], color});
-        triangles.push_back({vertices[5], vertices[4], vertices[7], color});
-        triangles.push_back({vertices[5], vertices[7], vertices[6], color});
-        triangles.push_back({vertices[1], vertices[5], vertices[6], color});
-        triangles.push_back({vertices[1], vertices[6], vertices[2], color});
-        triangles.push_back({vertices[4], vertices[5], vertices[1], color});
-        triangles.push_back({vertices[4], vertices[1], vertices[0], color});
-        triangles.push_back({vertices[2], vertices[6], vertices[7], color});
-        triangles.push_back({vertices[2], vertices[7], vertices[3], color});
+        triangles.push_back({vertices[0], vertices[1], vertices[2], get_random_color()});
+        triangles.push_back({vertices[0], vertices[2], vertices[3], get_random_color()});
+        triangles.push_back({vertices[4], vertices[0], vertices[3], get_random_color()});
+        triangles.push_back({vertices[4], vertices[3], vertices[7], get_random_color()});
+        triangles.push_back({vertices[5], vertices[4], vertices[7], get_random_color()});
+        triangles.push_back({vertices[5], vertices[7], vertices[6], get_random_color()});
+        triangles.push_back({vertices[1], vertices[5], vertices[6], get_random_color()});
+        triangles.push_back({vertices[1], vertices[6], vertices[2], get_random_color()});
+        triangles.push_back({vertices[4], vertices[5], vertices[1], get_random_color()});
+        triangles.push_back({vertices[4], vertices[1], vertices[0], get_random_color()});
+        triangles.push_back({vertices[2], vertices[6], vertices[7], get_random_color()});
+        triangles.push_back({vertices[2], vertices[7], vertices[3], get_random_color()});
+    }
+
+    Color get_random_color() {
+        return {double(rand() % 256), double(rand() % 256), double(rand() % 256)};
     }
 
     void translate_vertices() {
