@@ -219,7 +219,7 @@ int main() {
     glfwSetCursorPosCallback(window, mouse_callback);
 
     std::vector<std::vector<double>> depth_buffer;
-    initialize_depth_buffer(image_width, image_height, depth_buffer);
+
 
 
 
@@ -227,6 +227,7 @@ int main() {
         auto frame_start_time = chrono::high_resolution_clock::now();
 
         Image image = Image(image_width, image_height);
+        initialize_depth_buffer(image_width, image_height, depth_buffer);
 
 
         renderer.set_camera(game_state.camera);

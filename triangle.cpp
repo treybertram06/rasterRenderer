@@ -7,6 +7,7 @@ void Triangle::draw_wireframe(Renderer& renderer, Image& image, double viewport_
 
 void Triangle::draw_filled(Renderer& renderer, Image& image, double viewport_info[], std::vector<std::vector<double>>& depth_buffer) {
     renderer.draw_filled_triangle_with_depth(P0, P1, P2, color, image, viewport_info, depth_buffer);
+    //renderer.draw_filled_triangle(P0, P1, P2, color, image, viewport_info);
 }
 
 void Triangle::draw_shaded(Renderer& renderer, Image& image) {

@@ -64,111 +64,127 @@ public:
     }
 
     void draw_filled_triangle(Vec3& P0, Vec3& P1, Vec3& P2, const Color& c, Image& image, double viewport_info[]) {
-    move_vertices_from_camera(P0, P1, P2);
-    std::vector<Vec3> triangle_moved = {moved_P0, moved_P1, moved_P2};
+        move_vertices_from_camera(P0, P1, P2);
+        std::vector<Vec3> triangle_moved = {moved_P0, moved_P1, moved_P2};
 
-    project_vertices(moved_P0, moved_P1, moved_P2, viewport_info);
-    std::vector<Vec3> triangle_projected = {projected_P0, projected_P1, projected_P2};
+        project_vertices(moved_P0, moved_P1, moved_P2, viewport_info);
+        std::vector<Vec3> triangle_projected = {projected_P0, projected_P1, projected_P2};
 
-    if (is_in_view(triangle_projected, viewport_info) && is_in_front(triangle_moved)) {
+        if (is_in_view(triangle_projected, viewport_info) && is_in_front(triangle_moved)) {
 
-        if (projected_P1.y < projected_P0.y) std::swap(projected_P1, projected_P0);
-        if (projected_P2.y < projected_P0.y) std::swap(projected_P2, projected_P0);
-        if (projected_P2.y < projected_P1.y) std::swap(projected_P2, projected_P1);
+            if (projected_P1.y < projected_P0.y) std::swap(projected_P1, projected_P0);
+            if (projected_P2.y < projected_P0.y) std::swap(projected_P2, projected_P0);
+            if (projected_P2.y < projected_P1.y) std::swap(projected_P2, projected_P1);
 
-        std::vector<double> x01 = interpolate(projected_P0.y, projected_P0.x, projected_P1.y, projected_P1.x);
-        std::vector<double> x12 = interpolate(projected_P1.y, projected_P1.x, projected_P2.y, projected_P2.x);
-        std::vector<double> x02 = interpolate(projected_P0.y, projected_P0.x, projected_P2.y, projected_P2.x);
+            auto x01 = interpolate(projected_P0.y, projected_P0.x, projected_P1.y, projected_P1.x);
+            auto x12 = interpolate(projected_P1.y, projected_P1.x, projected_P2.y, projected_P2.x);
+            auto x02 = interpolate(projected_P0.y, projected_P0.x, projected_P2.y, projected_P2.x);
 
-        std::vector<double> x012 = x01;
-        x012.pop_back();
-        x012.insert(x012.end(), x12.begin(), x12.end());
+            x01.pop_back();
+            std::vector<double> x012;
+            x012.reserve(x01.size() + x12.size());
+            x012.insert(x012.end(), x01.begin(), x01.end());
+            x012.insert(x012.end(), x12.begin(), x12.end());
 
-        size_t m = x012.size() / 2;
-        std::vector<double> x_left, x_right;
+            auto m = floor(x012.size() / 2);
+            std::vector<double> x_left, x_right;
 
-        if (x02[m] < x012[m]) {
-            x_left = x02;
-            x_right = x012;
-        } else {
-            x_left = x012;
-            x_right = x02;
-        }
+            if (x02[m] < x012[m]) {
+                x_left = x02;
+                x_right = x012;
+            } else {
+                x_left = x012;
+                x_right = x02;
+            }
 
-        for (int y = static_cast<int>(projected_P0.y); y <= static_cast<int>(projected_P2.y); y++) {
-            int left_x = static_cast<int>(x_left[y - static_cast<int>(projected_P0.y)]);
-            int right_x = static_cast<int>(x_right[y - static_cast<int>(projected_P0.y)]);
+            for (int y = projected_P0.y; y <= projected_P2.y; y++) {
+                int left_x = x_left[y - static_cast<int>(projected_P0.y)];
+                int right_x = x_right[y - static_cast<int>(projected_P0.y)];
 
-            for (int x = left_x; x <= right_x; x++) {
-                put_pixel(x, y, c, image);
+                for (int x = left_x; x <= right_x; x++) {
+                    put_pixel(x, y, c, image);
+                }
             }
         }
     }
-}
 
     void draw_filled_triangle_with_depth(Vec3& P0, Vec3& P1, Vec3& P2, const Color& c, Image& image, double viewport_info[], std::vector<std::vector<double>>& depth_buffer) {
-    move_vertices_from_camera(P0, P1, P2);
-    std::vector<Vec3> triangle_moved = {moved_P0, moved_P1, moved_P2};
+        move_vertices_from_camera(P0, P1, P2);
+        std::vector<Vec3> triangle_moved = {moved_P0, moved_P1, moved_P2};
 
-    project_vertices(moved_P0, moved_P1, moved_P2, viewport_info);
-    std::vector<Vec3> triangle_projected = {projected_P0, projected_P1, projected_P2};
+        project_vertices(moved_P0, moved_P1, moved_P2, viewport_info);
+        std::vector<Vec3> triangle_projected = {projected_P0, projected_P1, projected_P2};
 
-    if (is_in_view(triangle_projected, viewport_info) && is_in_front(triangle_moved)) {
+        if (is_in_view(triangle_projected, viewport_info) && is_in_front(triangle_moved)) {
 
-        if (projected_P1.y < projected_P0.y) std::swap(projected_P1, projected_P0);
-        if (projected_P2.y < projected_P0.y) std::swap(projected_P2, projected_P0);
-        if (projected_P2.y < projected_P1.y) std::swap(projected_P2, projected_P1);
+            // 1. Sort the vertices by their Y-coordinates (ascending order)
+            if (projected_P1.y < projected_P0.y) std::swap(projected_P0, projected_P1);
+            if (projected_P2.y < projected_P0.y) std::swap(projected_P0, projected_P2);
+            if (projected_P2.y < projected_P1.y) std::swap(projected_P1, projected_P2);
 
-        std::vector<double> x01 = interpolate(projected_P0.y, projected_P0.x, projected_P1.y, projected_P1.x);
-        std::vector<double> x12 = interpolate(projected_P1.y, projected_P1.x, projected_P2.y, projected_P2.x);
-        std::vector<double> x02 = interpolate(projected_P0.y, projected_P0.x, projected_P2.y, projected_P2.x);
+            // Extract vertex coordinates
+            int x0 = round_to_int(projected_P0.x), y0 = round_to_int(projected_P0.y), z0 = projected_P0.z;
+            int x1 = round_to_int(projected_P1.x), y1 = round_to_int(projected_P1.y), z1 = projected_P1.z;
+            int x2 = round_to_int(projected_P2.x), y2 = round_to_int(projected_P2.y), z2 = projected_P2.z;
 
-        std::vector<double> z01 = interpolate(projected_P0.y, projected_P0.z, projected_P1.y, projected_P1.z);
-        std::vector<double> z12 = interpolate(projected_P1.y, projected_P1.z, projected_P2.y, projected_P2.z);
-        std::vector<double> z02 = interpolate(projected_P0.y, projected_P0.z, projected_P2.y, projected_P2.z);
+            // 2. Split the triangle into a top and bottom part at Y1
+            // Interpolate along the edges into two parts: top and bottom
+            std::vector<double> x01 = interpolate(y0, x0, y1, x1); // Edge from P0 to P1
+            std::vector<double> z01 = interpolate(y0, z0, y1, z1);
 
-        std::vector<double> x012 = x01;
-        x012.pop_back();
-        x012.insert(x012.end(), x12.begin(), x12.end());
+            std::vector<double> x02 = interpolate(y0, x0, y2, x2); // Edge from P0 to P2
+            std::vector<double> z02 = interpolate(y0, z0, y2, z2);
 
-        std::vector<double> z012 = z01;
-        z012.pop_back();
-        z012.insert(z012.end(), z12.begin(), z12.end());
+            std::vector<double> x12 = interpolate(y1, x1, y2, x2); // Edge from P1 to P2
+            std::vector<double> z12 = interpolate(y1, z1, y2, z2);
 
-        size_t m = x012.size() / 2;
-        std::vector<double> x_left, x_right, z_left, z_right;
-
-        if (x02[m] < x012[m]) {
-            x_left = x02;
-            x_right = x012;
-            z_left = z02;
-            z_right = z012;
-        } else {
-            x_left = x012;
-            x_right = x02;
-            z_left = z012;
-            z_right = z02;
-        }
-
-        for (int y = static_cast<int>(projected_P0.y); y <= static_cast<int>(projected_P2.y); y++) {
-            int left_x = static_cast<int>(x_left[y - static_cast<int>(projected_P0.y)]);
-            int right_x = static_cast<int>(x_right[y - static_cast<int>(projected_P0.y)]);
-
-            double z_left_value = z_left[y - static_cast<int>(projected_P0.y)];
-            double z_right_value = z_right[y - static_cast<int>(projected_P0.y)];
-
-            double z_segment = interpolate_z(left_x, z_left_value, right_x, z_right_value);
-
-            for (int x = left_x; x <= right_x; x++) {
-                if (z_segment < depth_buffer[x][y]) {
-                    put_pixel(x, y, c, image);
-                    depth_buffer[x][y] = z_segment;
-                }
-                z_segment += (z_right_value - z_left_value) / (right_x - left_x);
+            // Remove the duplicate point at y1 when combining edges
+            std::vector<double> x_left, z_left, x_right, z_right;
+            if (x02.size() < x01.size() + x12.size()) {
+                x_left  = x01;
+                x_left.insert(x_left.end(), x12.begin() + 1, x12.end());
+                z_left  = z01;
+                z_left.insert(z_left.end(), z12.begin() + 1, z12.end());
+                x_right = x02;
+                z_right = z02;
+            } else {
+                x_left  = x02;
+                z_left  = z02;
+                x_right = x01;
+                x_right.insert(x_right.end(), x12.begin() + 1, x12.end());
+                z_right = z01;
+                z_right.insert(z_right.end(), z12.begin() + 1, z12.end());
             }
+
+            // 3. Render the triangle scanline by scanline
+            for (int y = y0; y <= y2; y++) {
+                if (y < viewport_info[1] && y >= 0) { // Bounds check on Y
+                    int segment_idx = y - y0; // Y-offset into interpolated arrays
+                    int xl = round_to_int(x_left[segment_idx]);
+                    int xr = round_to_int(x_right[segment_idx]);
+
+                    if (xl > xr) std::swap(xl, xr); // Ensure x_left <= x_right
+
+                    // Interpolate Z across the horizontal segment
+                    std::vector<double> z_segment = interpolate(xl, z_left[segment_idx], xr, z_right[segment_idx]);
+
+                    for (int x = xl; x <= xr; x++) {
+                        if (x >= 0 && x < viewport_info[0]) { // Bounds check on X
+                            double z = z_segment[x - xl];
+
+                            // Compare depth and update the depth buffer if closer
+                            if (z < depth_buffer[x][y]) {
+                                put_pixel(x, y, c, image);      // Draw pixel
+                                depth_buffer[x][y] = z;        // Update depth buffer
+                            }
+                        }
+                    }
+                }
+            }
+
         }
     }
-}
+
 
     static void draw_shaded_triangle(Vec3& P0, Vec3& P1, Vec3& P2, const Color& c, const Image& image) {
         //sort the points so that  y0 <= y1 <= y2
