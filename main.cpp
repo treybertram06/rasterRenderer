@@ -102,10 +102,10 @@ void process_movement() {
         game_state.camera.pos.y -= delta_y * velocity * delta_time;
     }
     if (keys[GLFW_KEY_Q]) {
-        game_state.camera.pos.x -= 0.1f * delta_time;
+        game_state.camera.pos.x -= 1.0f * delta_time;
     }
     if (keys[GLFW_KEY_E]) {
-        game_state.camera.pos.x += 0.1f * delta_time;
+        game_state.camera.pos.x += 1.0f * delta_time;
     }
 }
 
@@ -150,6 +150,7 @@ void initialize_depth_buffer(int image_width, int image_height, std::vector<std:
     for (int i = 0; i < image_width; i++) {
         for (int j = 0; j < image_height; j++) {
             depth_buffer[i][j] = std::numeric_limits<double>::infinity();
+            //depth_buffer[i][j] = 0;
         }
     }
 }
@@ -197,7 +198,7 @@ int main() {
     scene.add_model(cube);
     scene.add_model(cube2);
 
-    const int frame_rate = 60;
+    const int frame_rate = 99999;
     const chrono::milliseconds target_frame_duration(1000 / frame_rate);
 
     GLFWwindow* window = glfwCreateWindow(image_width, image_height, "OpenGL Window", NULL, NULL);

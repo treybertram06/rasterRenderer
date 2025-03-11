@@ -52,6 +52,7 @@ public:
     Vec3 pos;
     Vec3 rotation;
     double scale;
+    std::vector<Triangle> triangles;
 
 
 private:
@@ -126,7 +127,7 @@ private:
     }
 
     std::vector<Vec3> vertices;
-    std::vector<Triangle> triangles;
+
 
 
 

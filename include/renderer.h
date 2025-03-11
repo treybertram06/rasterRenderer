@@ -108,6 +108,9 @@ public:
         }
     }
 
+
+
+
     void draw_filled_triangle_with_depth(Vec3& P0, Vec3& P1, Vec3& P2, const Color& c, Image& image, double viewport_info[], std::vector<std::vector<double>>& depth_buffer) {
         move_vertices_from_camera(P0, P1, P2);
         std::vector<Vec3> triangle_moved = {moved_P0, moved_P1, moved_P2};
@@ -165,25 +168,29 @@ public:
 
                     if (xl > xr) std::swap(xl, xr); // Ensure x_left <= x_right
 
-                    // Interpolate Z across the horizontal segment
-                    std::vector<double> z_segment = interpolate(xl, z_left[segment_idx], xr, z_right[segment_idx]);
+                    // Compute incremental perspective-correct depth interpolation
+                    double z_l_inv = 1.0 / std::max(z_left[segment_idx], 1e-6);
+                    double z_r_inv = 1.0 / std::max(z_right[segment_idx], 1e-6);
+                    double dz_inv = (xr != xl) ? (z_r_inv - z_l_inv) / (xr - xl) : 0;
+                    double z_inv = z_l_inv;
 
-                    for (int x = xl; x <= xr; x++) {
+                    for (int x = xl; x <= xr; x++, z_inv += dz_inv) {
                         if (x >= 0 && x < viewport_info[0]) { // Bounds check on X
-                            double z = z_segment[x - xl];
+                            double z = 1.0 / z_inv; // Recover actual depth
+                            z = std::max(z, 1e-6);
 
                             // Compare depth and update the depth buffer if closer
-                            if (z < depth_buffer[x][y]) {
-                                put_pixel(x, y, c, image);      // Draw pixel
-                                depth_buffer[x][y] = z;        // Update depth buffer
+                            if (z <= depth_buffer[x][y]) {
+                                put_pixel(x, y, c, image); // Draw pixel
+                                depth_buffer[x][y] = z;    // Update depth buffer
                             }
                         }
                     }
                 }
             }
-
         }
     }
+
 
 
     static void draw_shaded_triangle(Vec3& P0, Vec3& P1, Vec3& P2, const Color& c, const Image& image) {
@@ -349,8 +356,34 @@ public:
 
     void render(Renderer& renderer, Image& image, double viewport_info[], std::vector<std::vector<double>>& depth_buffer) {
         for (auto& model : models) {
-            model.draw_filled(renderer, image, viewport_info, depth_buffer);
+            auto culled = cull_back_faces(model, renderer.camera);
+            culled.draw_filled(renderer, image, viewport_info, depth_buffer);
+            //culled.draw_wireframe(renderer, image, viewport_info);
         }
+    }
+
+private:
+    Model cull_back_faces(Model model, Camera& camera) {
+        auto it = model.triangles.begin();
+        while (it != model.triangles.end()) {
+            if (is_back_facing(*it, camera)) {
+                // Remove the back-facing triangle from the model
+                it = model.triangles.erase(it);
+            } else {
+                ++it;
+            }
+        }
+        return model;
+    }
+
+    bool is_back_facing(Triangle& triangle, Camera& camera) {
+        Vec3 edge1 = triangle.P1 - triangle.P0;
+        Vec3 edge2 = triangle.P2 - triangle.P0;
+        Vec3 normal = edge1.cross(edge2).normalize();
+
+        Vec3 camera_to_triangle = triangle.P0 - camera.pos;
+
+        return normal.dot(camera_to_triangle) < 0;
     }
 };
 

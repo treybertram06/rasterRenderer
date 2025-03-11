@@ -18,21 +18,27 @@ inline int round_to_int(double n) {
 
 inline std::vector<double> interpolate(double i0, double d0, double i1, double d1) {
     std::vector<double> values;
-    if (i0 == i1) {
+
+    if (std::round(i0) == std::round(i1)) { // Ensure we handle single-point cases correctly
         values.push_back(d0);
         return values;
     }
 
+    int start = std::round(i0);
+    int end = std::round(i1);
     double a = (d1 - d0) / (i1 - i0);
     double d = d0;
 
-    for (int i = i0; i <= i1; i++) {
-        values.push_back(d);
-        d = d+a;
-    }
-    return values;
+    int step = (start < end) ? 1 : -1; // Handle both increasing & decreasing cases
 
+    for (int i = start; i != end + step; i += step) {
+        values.push_back(d);
+        d += a * step; // Adjust `d` based on direction
+    }
+
+    return values;
 }
+
 
 inline double interpolate_z(int x0, double z0, int x1, double z1) {
     if (x0 == x1) return z0;
