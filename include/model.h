@@ -73,6 +73,20 @@ private:
         triangles.push_back({vertices[2], vertices[7], vertices[3], get_random_color()});
     }
 
+    /*
+    void append_triangles() {
+        triangles.push_back({vertices[2], vertices[0], vertices[1], get_random_color()});
+        triangles.push_back({vertices[2], vertices[1], vertices[3], get_random_color()});
+
+        // Side Faces (Make sure they are CCW when viewed from outside)
+        triangles.push_back({vertices[1], vertices[0], vertices[4], get_random_color()}); // Front
+        triangles.push_back({vertices[3], vertices[1], vertices[4], get_random_color()}); // Right
+        triangles.push_back({vertices[2], vertices[3], vertices[4], get_random_color()}); // Back
+        triangles.push_back({vertices[0], vertices[2], vertices[4], get_random_color()}); // Left
+
+    }
+    */
+
     Color get_random_color() {
         return {double(rand() % 256), double(rand() % 256), double(rand() % 256)};
     }

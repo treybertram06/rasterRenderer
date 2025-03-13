@@ -190,6 +190,15 @@ int main() {
     vertices.push_back(Vec3(1, -1, -1));
 
 
+    /*
+    vector<Vec3> vertices;
+    vertices.push_back(Vec3(-1, 1, 0));
+    vertices.push_back(Vec3(1, 1, 0));
+    vertices.push_back(Vec3(-1, -1, 0));
+    vertices.push_back(Vec3(1, -1, 0));
+    vertices.push_back(Vec3(0, 0, 2));
+*/
+
 
 
     Model cube = Model(vertices, Vec3(-1.5, 3, 7), Vec3(0, 0, 0), 1.0, RED);

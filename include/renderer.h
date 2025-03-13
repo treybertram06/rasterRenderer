@@ -358,7 +358,7 @@ public:
         for (auto& model : models) {
             auto culled = cull_back_faces(model, renderer.camera);
             culled.draw_filled(renderer, image, viewport_info, depth_buffer);
-            //culled.draw_wireframe(renderer, image, viewport_info);
+            //model.draw_wireframe(renderer, image, viewport_info);
         }
     }
 
