@@ -4,6 +4,8 @@
 #include "vec3.h"
 #include "color.h"
 #include "image.h"
+#include "light.h"
+#include "material.h"
 
 // Forward declaration instead of including renderer.h
 class Renderer;
@@ -18,7 +20,7 @@ public:
     Triangle(Vec3 P0, Vec3 P1, Vec3 P2, Color color) : P0(P0), P1(P1), P2(P2), color(color) {}
 
     void draw_wireframe(Renderer& renderer, Image& image, double viewport_info[]);
-    void draw_filled(Renderer& renderer, Image& image, double viewport_info[], std::vector<std::vector<double>>& depth_buffer);
+    void draw_filled(Renderer& renderer, Material& material, Light& light, Image& image, double viewport_info[], std::vector<std::vector<double>>& depth_buffer);
     void draw_shaded(Renderer& renderer, Image& image);
 
 

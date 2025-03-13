@@ -19,6 +19,8 @@ add_executable(tinyRenderer main.cpp
         include/triangle.h
         triangle.cpp
         include/camera.h
+        include/light.h
+        include/material.h
 )
 
 target_link_libraries(tinyRenderer glfw3 opengl32)

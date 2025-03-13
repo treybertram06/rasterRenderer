@@ -87,7 +87,7 @@ public:
         z += tranlation.z;
     }
 
-    Vec3 normalize() const {
+    Vec3 normalize() {
         double mag = magnitude();
         if (mag > 0) {
             return Vec3(x / mag, y / mag, z / mag);

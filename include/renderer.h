@@ -12,6 +12,9 @@
 #include <cmath>
 #include <algorithm>
 
+#include "light.h"
+#include "material.h"
+
 
 class Renderer {
 public:
@@ -103,6 +106,100 @@ public:
 
                 for (int x = left_x; x <= right_x; x++) {
                     put_pixel(x, y, c, image);
+                }
+            }
+        }
+    }
+
+    void draw_filled_triangle_with_phong(Vec3 &P0, Vec3 &P1, Vec3 &P2, Material &material, Light &light, const Camera &camera, Image &image, double viewport_info[], std::vector<std::vector<double>> &depth_buffer) {
+        move_vertices_from_camera(P0, P1, P2);
+        std::vector<Vec3> triangle_moved = {moved_P0, moved_P1, moved_P2};
+
+        project_vertices(moved_P0, moved_P1, moved_P2, viewport_info);
+        std::vector<Vec3> triangle_projected = {projected_P0, projected_P1, projected_P2};
+
+        if (is_in_view(triangle_projected, viewport_info) && is_in_front(triangle_moved)) {
+
+            Vec3 normal0 = compute_normal(P0, P1, P2);
+            Vec3 normal1 = normal0;
+            Vec3 normal2 = normal0;
+
+            // 1. Sort the vertices by their Y-coordinates (ascending order)
+            if (projected_P1.y < projected_P0.y) std::swap(projected_P0, projected_P1);
+            if (projected_P2.y < projected_P0.y) std::swap(projected_P0, projected_P2);
+            if (projected_P2.y < projected_P1.y) std::swap(projected_P1, projected_P2);
+
+            // Extract vertex coordinates
+            int x0 = round_to_int(projected_P0.x), y0 = round_to_int(projected_P0.y), z0 = projected_P0.z;
+            int x1 = round_to_int(projected_P1.x), y1 = round_to_int(projected_P1.y), z1 = projected_P1.z;
+            int x2 = round_to_int(projected_P2.x), y2 = round_to_int(projected_P2.y), z2 = projected_P2.z;
+
+            // 2. Split the triangle into a top and bottom part at Y1
+            // Interpolate along the edges into two parts: top and bottom
+            std::vector<double> x01 = interpolate(y0, x0, y1, x1); // Edge from P0 to P1
+            std::vector<double> z01 = interpolate(y0, z0, y1, z1);
+
+            std::vector<double> x02 = interpolate(y0, x0, y2, x2); // Edge from P0 to P2
+            std::vector<double> z02 = interpolate(y0, z0, y2, z2);
+
+            std::vector<double> x12 = interpolate(y1, x1, y2, x2); // Edge from P1 to P2
+            std::vector<double> z12 = interpolate(y1, z1, y2, z2);
+
+            // Remove the duplicate point at y1 when combining edges
+            std::vector<double> x_left, z_left, x_right, z_right;
+            if (x02.size() < x01.size() + x12.size()) {
+                x_left  = x01;
+                x_left.insert(x_left.end(), x12.begin() + 1, x12.end());
+                z_left  = z01;
+                z_left.insert(z_left.end(), z12.begin() + 1, z12.end());
+                x_right = x02;
+                z_right = z02;
+            } else {
+                x_left  = x02;
+                z_left  = z02;
+                x_right = x01;
+                x_right.insert(x_right.end(), x12.begin() + 1, x12.end());
+                z_right = z01;
+                z_right.insert(z_right.end(), z12.begin() + 1, z12.end());
+            }
+
+            // 3. Render the triangle scanline by scanline
+            for (int y = y0; y <= y2; y++) {
+                if (y < viewport_info[1] && y >= 0) { // Bounds check on Y
+                    int segment_idx = y - y0; // Y-offset into interpolated arrays
+                    int xl = round_to_int(x_left[segment_idx]);
+                    int xr = round_to_int(x_right[segment_idx]);
+
+                    if (xl > xr) std::swap(xl, xr); // Ensure x_left <= x_right
+
+                    // Compute incremental perspective-correct depth interpolation
+                    double z_l_inv = 1.0 / std::max(z_left[segment_idx], 1e-6);
+                    double z_r_inv = 1.0 / std::max(z_right[segment_idx], 1e-6);
+                    double dz_inv = (xr != xl) ? (z_r_inv - z_l_inv) / (xr - xl) : 0;
+                    double z_inv = z_l_inv;
+
+                    for (int x = xl; x <= xr; x++, z_inv += dz_inv) {
+                        if (x >= 0 && x < viewport_info[0]) { // Bounds check on X
+                            double z = 1.0 / z_inv; // Recover actual depth
+                            z = std::max(z, 1e-6);
+
+                            Vec3 normal = normal0; // You can interpolate between normals based on barycentric coordinates here
+
+                            Vec3 pixel = Vec3(x, y, 0);
+
+                            Vec3 light_dir = (light.pos - pixel).normalize();  // Light direction
+                            Vec3 view_dir = (camera.pos - pixel).normalize();  // View direction
+
+                            // Apply Phong shading model
+                            Color color = phong_shading(normal, light_dir, view_dir, material, light);
+
+                            // Compare depth and update the depth buffer if closer
+                            if (z <= depth_buffer[x][y]) {
+                                put_pixel(x, y, color, image);
+                                depth_buffer[x][y] = z;    // Update depth buffer
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -340,6 +437,31 @@ private:
         return true;
     }
 
+    Vec3 compute_normal(Vec3& P0, Vec3& P1, Vec3& P2) {
+        Vec3 edge1 = P1 - P0;
+        Vec3 edge2 = P2 - P0;
+        return edge1.cross(edge2).normalize();
+    }
+
+    Color phong_shading( Vec3& normal, Vec3& light_dir, Vec3& view_dir, Material& material, Light& light) {
+        // Ambient component
+        auto ambient = Color(material.ambient * light.intensity);
+
+        // Diffuse component (Lambertian reflection)
+        double diff = std::max(normal.dot(light_dir), 0.0);
+        auto diffuse = Color(material.diffuse * light.intensity * diff);
+
+        // Specular component (Phong reflection model)
+        Vec3 reflect_dir = normal * 2.0 * normal.dot(light_dir) - light_dir;
+        double spec = std::pow(std::max(view_dir.dot(reflect_dir), 0.0), material.shininess);
+        auto specular = Color(material.specular * light.intensity * spec);
+
+        // Combine components
+        return Color(ambient + diffuse + specular);
+    }
+
+
+
 
 
 };
@@ -354,10 +476,10 @@ public:
         models.push_back(model);
     }
 
-    void render(Renderer& renderer, Image& image, double viewport_info[], std::vector<std::vector<double>>& depth_buffer) {
+    void render(Renderer& renderer, Material& material, Light& light, Image& image, double viewport_info[], std::vector<std::vector<double>>& depth_buffer) {
         for (auto& model : models) {
             auto culled = cull_back_faces(model, renderer.camera);
-            culled.draw_filled(renderer, image, viewport_info, depth_buffer);
+            culled.draw_filled(renderer, material, light, image, viewport_info, depth_buffer);
             //model.draw_wireframe(renderer, image, viewport_info);
         }
     }

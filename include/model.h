@@ -42,9 +42,9 @@ public:
         }
     }
 
-    void draw_filled(Renderer& renderer, Image& image, double viewport_info[], std::vector<std::vector<double>>& depth_buffer) {
+    void draw_filled(Renderer& renderer, Material& material, Light& light, Image& image, double viewport_info[], std::vector<std::vector<double>>& depth_buffer) {
         for (auto& triangle : triangles) {
-            triangle.draw_filled(renderer, image, viewport_info, depth_buffer);
+            triangle.draw_filled(renderer, material, light, image, viewport_info, depth_buffer);
         }
     }
 

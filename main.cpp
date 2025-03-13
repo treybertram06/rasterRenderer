@@ -31,6 +31,7 @@ struct GameState {
     Camera camera = Camera();
 
 };
+
 GameState game_state;
 
 void error_callback(int error, const char* description) {
@@ -207,6 +208,14 @@ int main() {
     scene.add_model(cube);
     scene.add_model(cube2);
 
+    Light light = {Vec3(5, 5, 5), 1.0, Color(255, 255, 255)};  // White light at (0, 0, 10)
+    Material material = {
+        Color(25.5, 25.5, 25.5),  // ambient
+        Color(178.5, 178.5, 178.5),  // diffuse
+        Color(255, 255, 255),  // specular
+        32.0                   // shininess
+    };
+
     const int frame_rate = 99999;
     const chrono::milliseconds target_frame_duration(1000 / frame_rate);
 
@@ -241,7 +250,7 @@ int main() {
 
 
         renderer.set_camera(game_state.camera);
-        scene.render(renderer, image, viewport_info, depth_buffer);
+        scene.render(renderer, material, light, image, viewport_info, depth_buffer);
         image.output_image();
 
 
