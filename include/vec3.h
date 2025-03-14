@@ -29,10 +29,20 @@ public:
     }
 
 
-    Vec3 operator-(Vec3& subtrahend) const {
+    Vec3 operator-(const Vec3& subtrahend) const {
         return Vec3(x - subtrahend.x,
                     y - subtrahend.y,
                     z - subtrahend.z);
+    }
+
+    Vec3 operator-() {
+        return Vec3(-x, -y, -z);
+    }
+
+    Vec3 operator-(double subtrahend) const {
+        return Vec3(x - subtrahend,
+                    y - subtrahend,
+                    z - subtrahend);
     }
 
     Vec3 operator-=(const Vec3& subtrahend) {
@@ -113,6 +123,15 @@ public:
             x * other.x +
             y * other.y +
             z * other.z);
+    }
+
+    Vec3 reflect(Vec3& normal)  {
+        Vec3 normalized_normal = normal.normalize();
+
+        double dot_product = this->dot(normalized_normal);
+        Vec3 reflection = *this - (normalized_normal * (2 * dot_product));
+
+        return reflection;
     }
 
 

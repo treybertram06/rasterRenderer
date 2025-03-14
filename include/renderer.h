@@ -120,9 +120,8 @@ public:
 
         if (is_in_view(triangle_projected, viewport_info) && is_in_front(triangle_moved)) {
 
-            Vec3 normal0 = compute_normal(P0, P1, P2);
-            Vec3 normal1 = normal0;
-            Vec3 normal2 = normal0;
+            //move lights
+            Vec3 light_pos_view = move_from_camera(light.pos);
 
             // 1. Sort the vertices by their Y-coordinates (ascending order)
             if (projected_P1.y < projected_P0.y) std::swap(projected_P0, projected_P1);
@@ -163,6 +162,19 @@ public:
                 z_right.insert(z_right.end(), z12.begin() + 1, z12.end());
             }
 
+            Vec3 triangle_normal = compute_normal(moved_P0, moved_P1, moved_P2);
+
+            Vec3 light_direction = (light_pos_view - moved_P0).normalize();
+            double diffuse_strenth = std::max(0.0, light_direction.dot(triangle_normal));
+            auto diffuse = Color(light.intensity * diffuse_strenth);
+
+            Vec3 view_direction = (camera.pos - moved_P0).normalize(); // Direction from point to camera
+            Vec3 reflect_source = reflect(light_direction, triangle_normal); // Reflect the light direction
+            double specular_strength = std::max(0.0, reflect_source.dot(view_direction)); // Dot with view direction
+            specular_strength = pow(specular_strength, 32.0); // Apply shininess (32.0 is the shininess exponent)
+            auto specular = Color(light.intensity * specular_strength);
+
+
             // 3. Render the triangle scanline by scanline
             for (int y = y0; y <= y2; y++) {
                 if (y < viewport_info[1] && y >= 0) { // Bounds check on Y
@@ -183,15 +195,10 @@ public:
                             double z = 1.0 / z_inv; // Recover actual depth
                             z = std::max(z, 1e-6);
 
-                            Vec3 normal = normal0; // You can interpolate between normals based on barycentric coordinates here
+                            Color ambient_color = material.ambient;
 
-                            Vec3 pixel = Vec3(x, y, 0);
 
-                            Vec3 light_dir = (light.pos - pixel).normalize();  // Light direction
-                            Vec3 view_dir = (camera.pos - pixel).normalize();  // View direction
-
-                            // Apply Phong shading model
-                            Color color = phong_shading(normal, light_dir, view_dir, material, light);
+                            auto color = Color(ambient_color * 0.5 + diffuse * 0.5 + specular);
 
                             // Compare depth and update the depth buffer if closer
                             if (z <= depth_buffer[x][y]) {
@@ -352,6 +359,7 @@ private:
         moved_P1 = move_from_camera(P1);
         moved_P2 = move_from_camera(P2);
     }
+
     Vec3 move_from_camera(Vec3& vertex) {
         Vec3 moved_vertex = vertex - camera.pos;
 
@@ -440,24 +448,16 @@ private:
     Vec3 compute_normal(Vec3& P0, Vec3& P1, Vec3& P2) {
         Vec3 edge1 = P1 - P0;
         Vec3 edge2 = P2 - P0;
-        return edge1.cross(edge2).normalize();
+        return edge2.cross(edge1).normalize();
     }
 
-    Color phong_shading( Vec3& normal, Vec3& light_dir, Vec3& view_dir, Material& material, Light& light) {
-        // Ambient component
-        auto ambient = Color(material.ambient * light.intensity);
+    Vec3 reflect(const Vec3& vector, Vec3& normal) {
+        Vec3 normalized_normal = normal.normalize();
 
-        // Diffuse component (Lambertian reflection)
-        double diff = std::max(normal.dot(light_dir), 0.0);
-        auto diffuse = Color(material.diffuse * light.intensity * diff);
+        double dot_product = vector.dot(normalized_normal);
+        Vec3 reflection =  normalized_normal * vector - 2 * dot_product;
 
-        // Specular component (Phong reflection model)
-        Vec3 reflect_dir = normal * 2.0 * normal.dot(light_dir) - light_dir;
-        double spec = std::pow(std::max(view_dir.dot(reflect_dir), 0.0), material.shininess);
-        auto specular = Color(material.specular * light.intensity * spec);
-
-        // Combine components
-        return Color(ambient + diffuse + specular);
+        return reflection;
     }
 
 
