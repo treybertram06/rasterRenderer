@@ -8,7 +8,7 @@
 
 class Material {
 public:
-    Color ambient, diffuse, specular;
+    Color ambient, diffuse, specular, color;
     double shininess;
 };
 

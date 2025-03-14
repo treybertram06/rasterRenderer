@@ -53,7 +53,7 @@ public:
 private:
 
     Color blank = {0, 0, 0};
-    Color background = {100, 149, 237};
+    Color background = {0.392, 0.584, 0.929};
     unsigned char* byte_array;
     GLuint textureID;
 
@@ -69,9 +69,10 @@ private:
                 int new_j = i;
 
                 // Store the pixel data in the rotated position
-                byte_array[(new_j * image_width + new_i) * 3 + 0] = static_cast<unsigned char>(image[i][j].x);
-                byte_array[(new_j * image_width + new_i) * 3 + 1] = static_cast<unsigned char>(image[i][j].y);
-                byte_array[(new_j * image_width + new_i) * 3 + 2] = static_cast<unsigned char>(image[i][j].z);
+                byte_array[(new_j * image_width + new_i) * 3 + 0] = static_cast<unsigned char>(image[i][j].x * 255.0f);
+                byte_array[(new_j * image_width + new_i) * 3 + 1] = static_cast<unsigned char>(image[i][j].y * 255.0f);
+                byte_array[(new_j * image_width + new_i) * 3 + 2] = static_cast<unsigned char>(image[i][j].z * 255.0f);
+
             }
         }
         // std::cout << "Image rotated by 90 degrees and converted to byte array." << std::endl;

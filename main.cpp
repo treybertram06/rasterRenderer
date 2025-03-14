@@ -21,10 +21,10 @@
 
 using namespace std;
 
-const Color RED = Color(255, 0, 0);
-const Color GREEN = Color(0, 255, 0);
-const Color BLUE = Color(0, 0, 255);
-const Color WHITE = Color(255, 255, 255);
+const Color RED = Color(1, 0, 0);
+const Color GREEN = Color(0, 1, 0);
+const Color BLUE = Color(0, 0, 1);
+const Color WHITE = Color(1, 1, 1);
 const Color BLACK = Color(0, 0, 0);
 
 struct GameState {
@@ -208,11 +208,12 @@ int main() {
     scene.add_model(cube);
     scene.add_model(cube2);
 
-    Light light = {Vec3(5, 5, 5), 1.0, Color(255, 255, 255)};  // White light at (0, 0, 10)
+    Light light = {Vec3(5, 5, 5), 1.0, Color(1.0, 1.0, 1.0)};  // White light at (0, 0, 10)
     Material material = {
-        Color(25.5, 25.5, 25.5),  // ambient
-        Color(178.5, 178.5, 178.5),  // diffuse
-        Color(255, 255, 255),  // specular
+        Color(0.1, 0.1, 0.1),  // ambient
+        Color(0.7, 0.7, 0.7),  // diffuse
+        Color(0.1, 0.1, 0.1),  // specular
+        Color(1.0, 1.0, 1.0), // color
         32.0                   // shininess
     };
 

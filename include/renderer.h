@@ -168,11 +168,13 @@ public:
             double diffuse_strenth = std::max(0.0, light_direction.dot(triangle_normal));
             auto diffuse = Color(light.intensity * diffuse_strenth);
 
-            Vec3 view_direction = (camera.pos - moved_P0).normalize(); // Direction from point to camera
-            Vec3 reflect_source = reflect(light_direction, triangle_normal); // Reflect the light direction
-            double specular_strength = std::max(0.0, reflect_source.dot(view_direction)); // Dot with view direction
-            specular_strength = pow(specular_strength, 32.0); // Apply shininess (32.0 is the shininess exponent)
+            Vec3 reflect_source = reflect(light_direction, triangle_normal);
+            double specular_strength = std::max(0.0, reflect_source.dot(camera.pos));
+            specular_strength = std::max(specular_strength, 1.0);
+            specular_strength = pow(specular_strength, material.shininess / 256);
             auto specular = Color(light.intensity * specular_strength);
+
+            std::clog << specular.r << " " << specular.g << " " << specular.b << " " << std::endl;
 
 
             // 3. Render the triangle scanline by scanline
@@ -197,8 +199,8 @@ public:
 
                             Color ambient_color = material.ambient;
 
-
-                            auto color = Color(ambient_color * 0.5 + diffuse * 0.5 + specular);
+                            auto lighting = Color(ambient_color * 0.5 + diffuse * 1.0 + specular * 0.5);
+                            auto color = Color(material.color * lighting);
 
                             // Compare depth and update the depth buffer if closer
                             if (z <= depth_buffer[x][y]) {
