@@ -200,15 +200,18 @@ int main() {
     vertices.push_back(Vec3(0, 0, 2));
 */
 
+    Vec3 light_location = {3.0, 0.0, 7};
 
 
     Model cube = Model(vertices, Vec3(-1.5, 3, 7), Vec3(0, 0, 0), 1.0, RED);
     Model cube2 = Model(vertices, Vec3(0.0, 0.0, 7), RED);
+    Model cube_l = Model(vertices, light_location, Vec3(0, 0, 0), 0.1, RED);
 
     scene.add_model(cube);
     scene.add_model(cube2);
+    scene.add_model(cube_l);
 
-    Light light = {Vec3(5, 5, 5), 1.0, Color(1.0, 1.0, 1.0)};  // White light at (0, 0, 10)
+    Light light = {light_location, 1.0, Color(1.0, 1.0, 1.0)};  // White light at (0, 0, 10)
     Material material = {
         Color(0.1, 0.1, 0.1),  // ambient
         Color(0.7, 0.7, 0.7),  // diffuse

@@ -111,7 +111,7 @@ public:
         }
     }
 
-    void draw_filled_triangle_with_phong(Vec3 &P0, Vec3 &P1, Vec3 &P2, Material &material, Light &light, const Camera &camera, Image &image, double viewport_info[], std::vector<std::vector<double>> &depth_buffer) {
+    void draw_filled_triangle_with_phong(Vec3 &P0, Vec3 &P1, Vec3 &P2, Material &material, Light &light, Camera &camera, Image &image, double viewport_info[], std::vector<std::vector<double>> &depth_buffer) {
         move_vertices_from_camera(P0, P1, P2);
         std::vector<Vec3> triangle_moved = {moved_P0, moved_P1, moved_P2};
 
@@ -121,8 +121,9 @@ public:
         if (is_in_view(triangle_projected, viewport_info) && is_in_front(triangle_moved)) {
 
             //move lights
+            //for (auto& light : lights) {
             Vec3 light_pos_view = move_from_camera(light.pos);
-
+            //}
             // 1. Sort the vertices by their Y-coordinates (ascending order)
             if (projected_P1.y < projected_P0.y) std::swap(projected_P0, projected_P1);
             if (projected_P2.y < projected_P0.y) std::swap(projected_P0, projected_P2);
@@ -164,17 +165,28 @@ public:
 
             Vec3 triangle_normal = compute_normal(moved_P0, moved_P1, moved_P2);
 
-            Vec3 light_direction = (light_pos_view - moved_P0).normalize();
-            double diffuse_strenth = std::max(0.0, light_direction.dot(triangle_normal));
+            Color ambient_color = material.ambient;
+
+            Vec3 light_dir_P0 = (light_pos_view - moved_P0).normalize();
+            Vec3 light_dir_P1 = (light_pos_view - moved_P1).normalize();
+            Vec3 light_dir_P2 = (light_pos_view - moved_P2).normalize();
+
+            //Vec3 view_dir_P0 = ()
+            double diffuse_strenth = std::max(0.0, light_dir_P0.dot(triangle_normal));
             auto diffuse = Color(light.intensity * diffuse_strenth);
 
-            Vec3 reflect_source = reflect(light_direction, triangle_normal);
+            //needs per pixel light direction
+            /*
+            Vec3 reflect_source = reflect(light_dir_P0, triangle_normal);
             double specular_strength = std::max(0.0, reflect_source.dot(camera.pos));
             specular_strength = std::max(specular_strength, 1.0);
             specular_strength = pow(specular_strength, material.shininess / 256);
             auto specular = Color(light.intensity * specular_strength);
+            */
 
-            std::clog << specular.r << " " << specular.g << " " << specular.b << " " << std::endl;
+            //std::clog << "Specular: " << specular.r << " " << specular.g << " " << specular.b << " " << std::endl;
+            //std::clog << "Diffuse: " << diffuse.r << " " << diffuse.g << " " << diffuse.b << " " << std::endl;
+            //std::clog << "Ambient: " << ambient_color.r << " " << ambient_color.g << " " << ambient_color.b << " " << std::endl;
 
 
             // 3. Render the triangle scanline by scanline
@@ -197,10 +209,36 @@ public:
                             double z = 1.0 / z_inv; // Recover actual depth
                             z = std::max(z, 1e-6);
 
-                            Color ambient_color = material.ambient;
+                            //Vec3 light_dir_interpolated = interpolate_barycentric(x, y, moved_P0, moved_P1, moved_P2, light_dir_P0, light_dir_P1, light_dir_P2);
+                            //light_dir_interpolated.normalize();
 
-                            auto lighting = Color(ambient_color * 0.5 + diffuse * 1.0 + specular * 0.5);
+                            Vec3 frag_pos = interpolate_barycentric(x, y, projected_P0, projected_P1, projected_P2, moved_P0, moved_P1, moved_P2);
+                            Vec3 light_dir = (light_pos_view - frag_pos).normalize();
+                            Vec3 view_dir = (camera.pos - frag_pos).normalize();
+                            Vec3 halfway_dir = (light_dir + view_dir).normalize();
+
+                            Vec3 reflect_source = reflect(light_dir, triangle_normal);
+                            reflect_source.normalize();
+
+                            //dot of normal and halfwaydir
+                            double specular_strength = std::max(0.0, halfway_dir.dot(triangle_normal.normalize()));
+                            specular_strength = pow(specular_strength, material.shininess);
+
+                            auto specular = Color(light.intensity * specular_strength);
+
+
+                            auto lighting = Color(ambient_color * 1.0 + diffuse * 1.0 + specular * 0.0);
                             auto color = Color(material.color * lighting);
+
+                            Color debug_specular =  Color(specular_strength, specular_strength, specular_strength);
+                            debug_specular = Color(debug_specular + ambient_color);
+
+                            /*
+                            if (x % 100 == 0 && y % 100 == 0) {
+                                std::clog << "Pixel (" << x << ", " << y << ") - Specular: "
+                                          << specular.r << ", " << specular.g << ", " << specular.b << std::endl;
+                            }
+                            */
 
                             // Compare depth and update the depth buffer if closer
                             if (z <= depth_buffer[x][y]) {
@@ -460,6 +498,22 @@ private:
         Vec3 reflection =  normalized_normal * vector - 2 * dot_product;
 
         return reflection;
+    }
+
+    Vec3 interpolate_barycentric(int x, int y, Vec3 P0, Vec3 P1, Vec3 P2, Vec3 V0, Vec3 V1, Vec3 V2) {
+        Vec3 v0 = P1 - P0, v1 = P2 - P0, v2 = Vec3(x, y, 0) - P0;
+        double d00 = v0.dot(v0);
+        double d01 = v0.dot(v1);
+        double d11 = v1.dot(v1);
+        double d20 = v2.dot(v0);
+        double d21 = v2.dot(v1);
+        double denom = d00 * d11 - d01 * d01;
+
+        double v = (d11 * d20 - d01 * d21) / denom;
+        double w = (d00 * d21 - d01 * d20) / denom;
+        double u = 1.0 - v - w;
+
+        return V0 * u + V1 * v + V2 * w;
     }
 
 
